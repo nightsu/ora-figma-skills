@@ -1,0 +1,62 @@
+# 仓库指令
+
+这是 `ora-figma-skills` 仓库的 Codex 仓库级指令文件。它适用于仓库根目录及其所有子目录。
+
+## 仓库定位
+
+- 这是面向 Codex 和 Claude Code 的 Figma workflow skills 仓库。
+- 每个技能以独立目录维护，目录内保持统一结构。
+- 仓库面向 Codex 提供 standalone skills，面向 Claude Code 提供 plugin 分发。
+- 这套技能只负责 Figma 到工程实施材料的准备、检查和交接，不直接修改业务项目代码。
+
+## 当前技能
+
+- `figma-clarify-requirement`:把用户自然语言需求整理为 clarified-requirement.md(figma-workflow-suite 的 phase A)。
+- `figma-ui-understand`:从指定 Figma node 提取页面结构、重复模式、疑似组件和 UI 语义,输出 ui-understanding.md(figma-workflow-suite 的 phase B)。
+- `figma-api-first`:把接口结构整理为 api-mapping.md(figma-workflow-suite 的 phase C1)。
+- `figma-ui-api-mapper`:清理 Figma 节点,合并 api-mapping.md,输出 component-mapping.md(figma-workflow-suite 的 phase C2,renamed from `figma-api-mapper`)。
+- `figma-design-token`:从 Figma node 抽取视觉 token,输出 design-token-patch.md(figma-workflow-suite 的 phase D)。
+- `figma-emit-spec`:合并 5 份上游 .md 产物 → implementation-spec.md + open-questions.md,提供 handoff 出口(figma-workflow-suite 的 phase E)。
+- `figma-workflow`:按 docs/design/<feature>/ 产物状态驱动 figma-workflow-suite C→D→E 阶段,展示 review gate 与 handoff 出口。
+- `figma-design-diff`:基于 `.figma-cache/` before/current evidence 生成 `design-diff.md`,提示 Figma 改稿影响和建议重跑阶段(P13)。
+- `figma-ui-handoff`:读取已有 figma-workflow 产物,生成 `ui-handoff.md`,帮助设计/产品补齐上游交接信息(P14)。
+- `figma-assets-validate`:读取已有 figma-workflow 产物,生成 `assets-manifest.md` 与 `validation-report.md`,收口资源交付和自动化验证(P15)。
+
+## 统一结构
+
+每个技能目录默认包含：
+
+- `SKILL.md`
+- `agents/openai.yaml`
+- `references/`
+- `scripts/`
+
+如果某个技能不需要某一类资源，可以不创建，但不要为了形式强行补空文件。
+
+## 编写原则
+
+- 先写清楚技能的适用场景，再写工作流。
+- 优先写可执行的步骤，不写空泛口号。
+- 参考资料放在 `references/`，不要把大段细节塞进 `SKILL.md`。
+- 默认使用中文编写仓库内说明，除非某个字段要求英文。
+- OpenSpec 相关的 change 生成规则、工件约束和写作偏好，优先放在 `openspec/config.yaml`。
+
+## 插件同步
+
+- `.claude-plugin/marketplace.json` 负责 Claude Code 侧的本地插件清单。
+- 新增或删除技能时，要同步检查 Claude Code 插件清单是否需要更新。
+
+## 安装和更新
+
+- 本地同步脚本位于 `scripts/install.sh`。
+- 更新仓库后，优先通过同一脚本刷新 Codex skills / Claude Code plugin 链接。
+- 新技能加入仓库后，要确认它能被 Claude Code plugin 清单暴露出来。
+
+## 维护偏好
+
+- 技能名使用小写、数字和连字符。
+- 命名优先短、明确、能触发。
+- 参考文件保持单层引用，不要层层嵌套。
+- 长参考文件需要尽量结构化，便于快速预览。
+- 只有跨仓库通用的规则放在这里，OpenSpec change 级别的默认约束不要重复写在此处。
+- `.figma-cache/` 是 feature 级 Figma evidence 缓存,不属于用户手写产物;不要把 raw Figma JSON 复制进 Phase A-E 的 `.md` 输出。
