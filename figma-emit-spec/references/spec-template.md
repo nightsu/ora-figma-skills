@@ -156,16 +156,16 @@
 | UI Structure | ui-understanding.md | yes | layout, control shape, visible labels, non-implementation notes |
 | API Mapping | api-mapping.md | yes | endpoint and field source |
 | Component Mapping | component-mapping.md | yes | UI slot to API binding |
-| Design Tokens | design-token-patch.md | yes | dimensions, spacing, colors, radius, typography, states |
+| Design Tokens | design-token-patch.md | yes | module-level dimensions, spacing, colors, radius, typography, states |
 | Implementation Spec | implementation-spec.md | yes | behavior, state, integration constraints |
 | Snapshot | snapshots/default.png | when present | visual baseline validation |
 
 ## Evidence by Module
 ### <ModuleName>
 - Structure evidence: `ui-understanding.md#...`
-- Token evidence: `design-token-patch.md#...`
-- Behavior/API evidence: `implementation-spec.md#...`
-- Snapshot evidence: `snapshots/default.png` / `<待 P15 回填>`
+- Token evidence: `design-token-patch.md#...`; plus key tokens: `<token-name>=<value>`, `<token-name>=<value>`
+- Behavior/API evidence: `implementation-spec.md#...` + `api-mapping.md#...`
+- Snapshot evidence: `snapshots/default.png` / `<missing>` / `<待 P15 回填>`
 - Do not implement from assumption:
   - <例如: 不要把表头排序实现成顶部 Tab / Radio,除非 ui-understanding 明确如此>
 
@@ -177,18 +177,62 @@
 ## Coding Gate Checklist
 - [ ] 每个 feature 编码前已读完 Required Files
 - [ ] 控件形态有 `ui-understanding.md` 依据
-- [ ] 样式值有 `design-token-patch.md` 依据
+- [ ] 每个 module 的样式值都有 module-level `design-token-patch.md` token evidence
+- [ ] 实现后已用 snapshot / visual baseline validation 对比布局、层级、颜色、间距、字号比例
 - [ ] 视觉验证使用 snapshot,但不以 snapshot 替代 token
 - [ ] 任何 intentional deviation 已写入 Conflict / Deviation Log
+```
+
+## `implementation-verification.md` 下游审计模板
+
+下游 coding agent 在声明实现完成前必须填写 `implementation-verification.md`。build/unit tests 只能证明代码行为或编译结果,不能替代 design token 和 snapshot / visual baseline validation。
+
+```markdown
+# Implementation Verification — <feature>
+
+> Filled by downstream coding agent before claiming the implementation is complete.
+> Build/unit tests alone are not design verification.
+
+## Evidence Read
+- [ ] `implementation-evidence.md`
+- [ ] `ui-understanding.md`
+- [ ] `design-token-patch.md`
+- [ ] `implementation-spec.md`
+- [ ] `api-mapping.md`
+- [ ] Snapshot / visual baseline: `snapshots/default.png` / `<missing>` / `<待 P15 回填>`
+
+## Token Application
+| Module | Token Evidence | Applied Tokens | Notes |
+|---|---|---|---|
+| <ModuleName> | `design-token-patch.md#...` | `<token-name>=<value>` | <notes> |
+
+## Snapshot / Visual Baseline Check
+| Baseline | Compared | Result | Notes |
+|---|---|---|---|
+| `snapshots/default.png` | yes/no | pass/fail/risk | <layout/color/spacing/typography notes> |
+
+## Intentional Deviations
+| Module | Deviation | Reason | Approved By |
+|---|---|---|---|
+| <ModuleName> | <deviation or none> | <reason> | <human/agent> |
+
+## Final Checklist
+- [ ] Design tokens were applied from module-level evidence, not guessed
+- [ ] Snapshot / visual baseline validation was performed or risk was recorded
+- [ ] Any missing evidence is recorded as verification risk
+- [ ] Build/unit tests passed where applicable
+- [ ] Implementation is ready for human review
 ```
 
 ### `Evidence by Module`
 
 - module 顺序与 `implementation-spec.md ## Modules` 保持一致
 - Structure evidence 必须指向 `ui-understanding.md` 中的具体模块或控件描述
-- Token evidence 必须指向 `design-token-patch.md` 中的具体 token 段
+- Token evidence 必须指向 `design-token-patch.md` 中的具体 token 段,并列出关键 token 名称和值
 - Behavior/API evidence 必须指向 `implementation-spec.md` / `api-mapping.md` 中的行为或字段段
-- 若某类证据缺失,写 `<missing>` 并同步写入 `open-questions.md`
+- Snapshot evidence 必须指向 `snapshots/default.png`、P15 visual baseline,或显式 `<missing>` / `<待 P15 回填>` 标记
+- 若某类证据缺失,写 `<missing>` 并同步写入 `open-questions.md` 或 verification risk
+- 下游 coding 完成前必须填写 `implementation-verification.md`
 
 ### `## Open Questions`
 - **填充:** 一句话指向 `open-questions.md`,不重复内容

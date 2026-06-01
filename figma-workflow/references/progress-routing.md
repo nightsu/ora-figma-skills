@@ -302,7 +302,16 @@ Previous handoff choice: superpowers (saved 2026-05-20). Use [P] to repeat.
 
 Phase E handoff 进入的是 OpenSpec / planning / task breakdown 等准备阶段,不是默认 coding 阶段。任何 handoff 选项都不在 `figma-workflow` 内写业务代码;业务代码只能在用户明确确认执行 coding 后开始。
 
-`implementation-spec.md` 不是 coding 阶段唯一输入。handoff 前必须生成或显式 skip `implementation-evidence.md`;后续实现 agent 必须根据该文件读取 `ui-understanding.md`、`design-token-patch.md`、`implementation-spec.md` 和 snapshot baseline。
+`implementation-spec.md` 不是 coding 阶段唯一输入。handoff 前必须有质量通过的 `implementation-evidence.md`,或用户显式 audited skip。`implementation-evidence.md` 缺失或 `incomplete` 都阻塞 handoff,不能静默进入 handoff。
+
+后续实现 agent 必须根据 `implementation-evidence.md` 读取 `ui-understanding.md`、`design-token-patch.md`、`implementation-spec.md` 和 snapshot baseline,并在完成前留下 `implementation-verification.md`。`implementation-verification.md` 必须记录 evidence 读取、module-level token 应用、snapshot / visual baseline validation 和 intentional deviations。
+
+Risk notes 示例:
+
+```text
+Risk notes:
+  - implementation-evidence.md skipped: downstream implementation may ignore design-token-patch.md or skip snapshot validation
+```
 
 ## 错误处理
 

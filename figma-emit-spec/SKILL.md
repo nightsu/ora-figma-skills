@@ -91,12 +91,15 @@ figma-emit-spec feature=<feature-name>
    - 不要引用 raw Figma JSON
 
 5. **合成 implementation-evidence.md**
-   - 按 feature 汇总后续实现必须读取的证据链
+   - `implementation-evidence.md` 是 coding gate,不是 `implementation-spec.md` 的摘要
+   - 按 feature 汇总后续实现必须读取的证据链,禁止只读 spec 开始编码
+   - 每个 module 必须包含 `Structure evidence` / `Token evidence` / `Behavior/API evidence` / `Snapshot evidence` / `Do not implement from assumption`
    - 结构/控件形态/可见文案来自 `ui-understanding.md`
-   - 尺寸/间距/颜色/圆角/字号/状态样式来自 `design-token-patch.md`
+   - 尺寸/间距/颜色/圆角/字号/状态样式来自 `design-token-patch.md`;Token evidence 必须是 module-level,不能只写"见 design-token-patch.md"
    - 接口/状态/交互/异常态来自 `implementation-spec.md` 与 `api-mapping.md`
-   - 视觉基线来自 `snapshots/default.png`、`assets-manifest.md` 或 `validation-report.md`;若 P15 尚未运行,保留待回填说明
+   - 视觉基线来自 `snapshots/default.png`、`assets-manifest.md` 或 `validation-report.md`;若 P15 尚未运行,写 `<missing>` / `<待 P15 回填>` 并标记 verification risk
    - 列出 `Do Not Implement From Assumption` 清单,禁止用常见 AntD 组件形态替代 Figma 证据
+   - 下游 coding 完成前必须产出 `implementation-verification.md`,记录 evidence 读取、token 应用、snapshot / visual baseline validation 和 intentional deviations
 
 6. **合成 open-questions.md**
    - 按来源分段:`From Phase A` / `From Phase B` / `From Phase C1` / `From Phase C2` / `From Phase D` / `Cross-Product Conflicts (auto-detected)`
@@ -215,16 +218,16 @@ handoff 发生在 Phase E review gate 选择 Proceed 之后。handoff 后可以�
 | UI Structure | ui-understanding.md | yes | layout, control shape, visible labels, non-implementation notes |
 | API Mapping | api-mapping.md | yes | endpoint and field source |
 | Component Mapping | component-mapping.md | yes | UI slot to API binding |
-| Design Tokens | design-token-patch.md | yes | dimensions, spacing, colors, radius, typography, states |
+| Design Tokens | design-token-patch.md | yes | module-level dimensions, spacing, colors, radius, typography, states |
 | Implementation Spec | implementation-spec.md | yes | behavior, state, integration constraints |
 | Snapshot | snapshots/default.png | when present | visual baseline validation |
 
 ## Evidence by Module
 ### <ModuleName>
 - Structure evidence: `ui-understanding.md#...`
-- Token evidence: `design-token-patch.md#...`
-- Behavior/API evidence: `implementation-spec.md#...`
-- Snapshot evidence: `snapshots/default.png` / `<待 P15 回填>`
+- Token evidence: `design-token-patch.md#...`; plus key tokens: `<token-name>=<value>`, `<token-name>=<value>`
+- Behavior/API evidence: `implementation-spec.md#...` + `api-mapping.md#...`
+- Snapshot evidence: `snapshots/default.png` / `<missing>` / `<待 P15 回填>`
 - Do not implement from assumption:
   - <例如: 不要把表头排序实现成顶部 Tab / Radio,除非 ui-understanding 明确如此>
 
@@ -236,9 +239,49 @@ handoff 发生在 Phase E review gate 选择 Proceed 之后。handoff 后可以�
 ## Coding Gate Checklist
 - [ ] 每个 feature 编码前已读完 Required Files
 - [ ] 控件形态有 `ui-understanding.md` 依据
-- [ ] 样式值有 `design-token-patch.md` 依据
+- [ ] 每个 module 的样式值都有 module-level `design-token-patch.md` token evidence
+- [ ] 实现后已用 snapshot / visual baseline validation 对比布局、层级、颜色、间距、字号比例
 - [ ] 视觉验证使用 snapshot,但不以 snapshot 替代 token
 - [ ] 任何 intentional deviation 已写入 Conflict / Deviation Log
+```
+
+### `implementation-verification.md` 下游审计模板
+
+```markdown
+# Implementation Verification — <feature>
+
+> Filled by downstream coding agent before claiming the implementation is complete.
+> Build/unit tests alone are not design verification.
+
+## Evidence Read
+- [ ] `implementation-evidence.md`
+- [ ] `ui-understanding.md`
+- [ ] `design-token-patch.md`
+- [ ] `implementation-spec.md`
+- [ ] `api-mapping.md`
+- [ ] Snapshot / visual baseline: `snapshots/default.png` / `<missing>` / `<待 P15 回填>`
+
+## Token Application
+| Module | Token Evidence | Applied Tokens | Notes |
+|---|---|---|---|
+| <ModuleName> | `design-token-patch.md#...` | `<token-name>=<value>` | <notes> |
+
+## Snapshot / Visual Baseline Check
+| Baseline | Compared | Result | Notes |
+|---|---|---|---|
+| `snapshots/default.png` | yes/no | pass/fail/risk | <layout/color/spacing/typography notes> |
+
+## Intentional Deviations
+| Module | Deviation | Reason | Approved By |
+|---|---|---|---|
+| <ModuleName> | <deviation or none> | <reason> | <human/agent> |
+
+## Final Checklist
+- [ ] Design tokens were applied from module-level evidence, not guessed
+- [ ] Snapshot / visual baseline validation was performed or risk was recorded
+- [ ] Any missing evidence is recorded as verification risk
+- [ ] Build/unit tests passed where applicable
+- [ ] Implementation is ready for human review
 ```
 
 ### `open-questions.md` 模板
