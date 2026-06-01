@@ -256,10 +256,12 @@ Choose:
 ```text
 Core products:
   [✓] implementation-spec.md
+  [✓] implementation-evidence.md
   [✓] open-questions.md
 
 工程化检查:
   [✓] design-diff.md
+  [✓] implementation-evidence.md
   [S] ui-handoff.md skipped
   [✓] assets-manifest.md
   [✓] validation-report.md
@@ -286,7 +288,7 @@ Handoff to planning / spec authoring:
 处理:
 
 - builtin:只产出 `docs/design/<feature>/task-breakdown.md`,并写 `.workflow-prefs.json`;不写业务代码
-- superpowers:检测到时推荐选择,调用 `superpowers:writing-plans`,并写 `.workflow-prefs.json`;输入只包含 `implementation-spec.md`
+- superpowers:检测到时推荐选择,调用 `superpowers:writing-plans`,并写 `.workflow-prefs.json`;输入包含 `implementation-spec.md` 与 `implementation-evidence.md`
 - manual:退出,不写偏好;可提示外部目标,包括 OpenSpec、Cursor、Codex 或用户自有流程
 - pause:退出,不写偏好,用于先回答 open questions 或编辑上游产物
 
@@ -299,6 +301,8 @@ Previous handoff choice: superpowers (saved 2026-05-20). Use [P] to repeat.
 `[P]` 只是快捷键,不自动执行。
 
 Phase E handoff 进入的是 OpenSpec / planning / task breakdown 等准备阶段,不是默认 coding 阶段。任何 handoff 选项都不在 `figma-workflow` 内写业务代码;业务代码只能在用户明确确认执行 coding 后开始。
+
+`implementation-spec.md` 不是 coding 阶段唯一输入。handoff 前必须生成或显式 skip `implementation-evidence.md`;后续实现 agent 必须根据该文件读取 `ui-understanding.md`、`design-token-patch.md`、`implementation-spec.md` 和 snapshot baseline。
 
 ## 错误处理
 

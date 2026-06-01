@@ -68,6 +68,22 @@ test("requires every file in a combined product before marking it generated", ()
   assert.equal(assets.status, "missing");
 });
 
+test("requires implementation evidence gate before handoff", () => {
+  const featureDir = fs.mkdtempSync(path.join(os.tmpdir(), "engineering-evidence-gate-"));
+  write(path.join(featureDir, "implementation-spec.md"), "# Implementation Spec\n");
+  write(path.join(featureDir, "assets-manifest.md"), "# Assets\n");
+  write(path.join(featureDir, "validation-report.md"), "# Validation\n");
+
+  const state = checkpoint.inferEngineeringCheckpoint(featureDir, { checkpoint: "pre-handoff" });
+  const evidence = state.items.find((item) => item.skill === "figma-emit-spec");
+
+  assert.equal(evidence.label, "Implementation evidence gate");
+  assert.equal(evidence.product, "implementation-evidence.md");
+  assert.equal(evidence.status, "missing");
+  assert.equal(evidence.recommendation, "required_prompt");
+  assert.equal(checkpoint.canContinueToHandoff(state), false);
+});
+
 test("appends skip audit without changing products", () => {
   const featureDir = fs.mkdtempSync(path.join(os.tmpdir(), "engineering-skip-audit-"));
   const item = {
