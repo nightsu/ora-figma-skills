@@ -86,6 +86,20 @@ function inferEngineeringCheckpoint(featureDir, options = {}) {
   });
 
   items.push({
+    label: "Implementation evidence gate",
+    skill: "figma-emit-spec",
+    product: "implementation-evidence.md",
+    status: checkpoint === "pre-handoff"
+      ? productStatus(featureDir, "implementation-evidence.md")
+      : "not_applicable",
+    recommendation: checkpoint === "pre-handoff" ? "required_prompt" : "available",
+    reason: checkpoint === "pre-handoff"
+      ? "pre-handoff must record which upstream artifacts implementation must consume"
+      : "available when the user asks about implementation evidence or handoff readiness",
+    risk: "implementation may use implementation-spec alone and ignore UI structure, token, or snapshot evidence",
+  });
+
+  items.push({
     label: "Assets / visual validation",
     skill: "figma-assets-validate",
     product: "assets-manifest.md, validation-report.md",

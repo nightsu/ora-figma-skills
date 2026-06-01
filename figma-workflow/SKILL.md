@@ -111,6 +111,7 @@ docs/design/<feature>/
 ├── validation-report.md
 ├── snapshots/
 ├── implementation-spec.md
+├── implementation-evidence.md
 └── open-questions.md
 ```
 
@@ -150,6 +151,7 @@ docs/design/<feature>/
 7. **phase E 后进入交接前工程化检查**
    - 只有用户在 phase E review gate 选择继续时才出现
    - 汇总 `design-diff.md`、`ui-handoff.md`、`assets-manifest.md` / `validation-report.md` / `snapshots/`
+   - `implementation-evidence.md` 是 handoff 前 `required_prompt`,用于约束后续实现必须读取哪些上游证据
    - `figma-assets-validate` 永远作为 handoff 前 `required_prompt`
    - 用户可以 run / view / skip
    - skip 必须写入 `inputs.md` audit
@@ -277,6 +279,20 @@ Handoff to planning / spec authoring:
 
 Phase E handoff 是 OpenSpec / planning / task breakdown 等准备阶段的入口,不是默认 coding 入口。任何 handoff 选项都不应在 `figma-workflow` 内部直接写业务代码;业务代码只能在用户明确确认执行 coding 后开始。
 
+### Implementation evidence gate
+
+`implementation-spec.md` 不是编码阶段的唯一输入。handoff 前必须生成或显式 skip `implementation-evidence.md`。
+
+该文件必须逐 feature 记录:
+
+- **Structure evidence**: 来自 `ui-understanding.md` 的布局、控件形态、可见文案、不要实现的装饰节点
+- **Token evidence**: 来自 `design-token-patch.md` 的尺寸、间距、颜色、圆角、字号、状态样式
+- **Behavior evidence**: 来自 `implementation-spec.md` / `api-mapping.md` 的接口、状态、交互和异常态
+- **Snapshot evidence**: 来自 `snapshots/default.png` 或 P15 baseline 的视觉验证点
+- **Deviation log**: 任何偏离上游证据的实现选择和原因
+
+下游实现 agent 在每个 feature 开始编码前必须先读 `implementation-evidence.md` 列出的证据文件。若 `ui-understanding.md`、`design-token-patch.md`、`implementation-spec.md` 互相冲突,必须先记录冲突和采用依据,不能用常见组件形态或个人推测代替 Figma 证据。
+
 ## 错误处理
 
 | 情况 | 处理 |
@@ -302,6 +318,7 @@ Phase E handoff 是 OpenSpec / planning / task breakdown 等准备阶段的入�
 - ❌ 不把工程化检查点当作 A-E 完成条件
 - ❌ 不因为工程化检查点 skip 就认为风险已解决
 - ❌ 不在 handoff 前静默跳过 `figma-assets-validate` 提示
+- ❌ 不在 handoff 前静默跳过 `implementation-evidence.md` 证据门禁
 - ❌ 不读取额外配置文件或自动猜测 feature 名
 - ❌ 不自动回答 open questions
 
