@@ -270,7 +270,7 @@ Handoff to planning / spec authoring:
 行为:
 
 - **Builtin**:从 `implementation-spec.md` 的 Modules 拆出 `task-breakdown.md`,不写代码
-- **superpowers**:推荐在可用时选择;调用 `superpowers:writing-plans`,把 `implementation-spec.md` 作为输入
+- **superpowers**:推荐在可用时选择;调用 `superpowers:writing-plans`,把 `implementation-spec.md` 与 `implementation-evidence.md` 作为输入
 - **Manual**:退出,不写偏好;可把 OpenSpec 作为外部目标,但本 skill 不生成 OpenSpec proposal
 - **Pause**:退出,不写偏好
 
@@ -281,17 +281,24 @@ Phase E handoff 是 OpenSpec / planning / task breakdown 等准备阶段的入�
 
 ### Implementation evidence gate
 
-`implementation-spec.md` 不是编码阶段的唯一输入。handoff 前必须生成或显式 skip `implementation-evidence.md`。
+`implementation-spec.md` 不是编码阶段的唯一输入。handoff 前必须有质量通过的 `implementation-evidence.md`,或用户显式 audited skip。
+`implementation-evidence.md` 缺失或 `incomplete` 都不能静默进入 handoff;`incomplete` 与缺失一样阻塞 handoff,除非用户明确 skip 并写入 `inputs.md` audit。
 
 该文件必须逐 feature 记录:
 
 - **Structure evidence**: 来自 `ui-understanding.md` 的布局、控件形态、可见文案、不要实现的装饰节点
-- **Token evidence**: 来自 `design-token-patch.md` 的尺寸、间距、颜色、圆角、字号、状态样式
+- **Token evidence**: 来自 `design-token-patch.md` 的 module-level 尺寸、间距、颜色、圆角、字号、状态样式
 - **Behavior evidence**: 来自 `implementation-spec.md` / `api-mapping.md` 的接口、状态、交互和异常态
 - **Snapshot evidence**: 来自 `snapshots/default.png` 或 P15 baseline 的视觉验证点
 - **Deviation log**: 任何偏离上游证据的实现选择和原因
 
+质量通过的 generated gate 中,Token evidence 不能写 `<missing>`;缺少 module-level token evidence 时,`implementation-evidence.md` 状态为 `incomplete`。
+Snapshot evidence 字段必须存在。`<missing>` / `<待 P15 回填>` 只允许作为 P15 回填前或 P15 已显式 skip/audit 后的 risk marker,表示 unresolved snapshot evidence 仍是 handoff risk,不能视为完整 visual validation。
+缺少 module-level token evidence、缺少 Snapshot evidence 字段或缺少 Coding Gate Checklist 时,`implementation-evidence.md` 状态为 `incomplete`。
+skip 风险必须明确写出:下游实现可能不遵守 `design-token-patch.md`,也可能跳过 snapshot / visual baseline validation。
+
 下游实现 agent 在每个 feature 开始编码前必须先读 `implementation-evidence.md` 列出的证据文件。若 `ui-understanding.md`、`design-token-patch.md`、`implementation-spec.md` 互相冲突,必须先记录冲突和采用依据,不能用常见组件形态或个人推测代替 Figma 证据。
+coding agent 在声明 coding complete 前必须填写 `docs/design/<feature>/implementation-verification.md`,记录已读 evidence、module-level token 应用、snapshot / visual baseline validation 和 intentional deviations。build/unit tests alone are not design verification。
 
 ## 错误处理
 

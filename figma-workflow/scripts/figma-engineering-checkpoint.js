@@ -21,6 +21,47 @@ function readTextIfExists(filePath) {
   return exists(filePath) ? fs.readFileSync(filePath, "utf8") : "";
 }
 
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function markdownSection(text, heading) {
+  const headingPattern = new RegExp(`^##\\s+${escapeRegExp(heading)}\\s*$`, "im");
+  const match = headingPattern.exec(text);
+  if (!match) return "";
+
+  const start = match.index + match[0].length;
+  const rest = text.slice(start);
+  const nextHeading = /^##\s+/m.exec(rest);
+  return nextHeading ? rest.slice(0, nextHeading.index) : rest;
+}
+
+function evidenceModuleBlocks(text) {
+  const section = markdownSection(text, "Evidence by Module");
+  if (!section.trim()) return [];
+
+  const headingMatches = [...section.matchAll(/^###\s+.+$/gm)];
+  return headingMatches.map((match, index) => {
+    const start = match.index + match[0].length;
+    const next = headingMatches[index + 1];
+    const end = next ? next.index : section.length;
+    return {
+      heading: match[0],
+      body: section.slice(start, end),
+    };
+  });
+}
+
+function evidenceLineValue(block, label) {
+  const pattern = new RegExp(`^\\s*-\\s*${escapeRegExp(label)}\\s*:\\s*(.+)$`, "im");
+  const match = pattern.exec(block.body);
+  return match ? match[1].trim() : "";
+}
+
+function hasUsableEvidenceValue(value) {
+  return Boolean(value) && !/<missing>|<待\s*P15\s*回填>|待\s*P15\s*回填/i.test(value);
+}
+
 function hasUnknownOrOpenQuestions(featureDir) {
   const candidates = [
     "component-mapping.md",
@@ -38,6 +79,57 @@ function productStatus(featureDir, product) {
   return products.every((fileName) => exists(path.join(featureDir, fileName))) ? "generated" : "missing";
 }
 
+function implementationEvidenceStatus(featureDir) {
+  const evidencePath = path.join(featureDir, "implementation-evidence.md");
+  if (!exists(evidencePath)) return "missing";
+
+  const text = readTextIfExists(evidencePath);
+  if (!text.trim()) return "incomplete";
+
+  const requiredWholeFilePatterns = [
+    /^#\s+Implementation Evidence\b/im,
+    /^##\s+Required Files Before Coding\s*$/im,
+    /ui-understanding\.md/i,
+    /design-token-patch\.md/i,
+    /implementation-spec\.md/i,
+    /^##\s+Evidence by Module\s*$/im,
+    /^##\s+Coding Gate Checklist\s*$/im,
+  ];
+
+  if (!requiredWholeFilePatterns.every((pattern) => pattern.test(text))) {
+    return "incomplete";
+  }
+
+  const moduleBlocks = evidenceModuleBlocks(text);
+  if (moduleBlocks.length === 0) return "incomplete";
+
+  const requiredModulePatterns = [
+    /Structure evidence/i,
+    /Token evidence/i,
+    /Behavior\/API evidence/i,
+    /Snapshot evidence/i,
+    /Do not implement from assumption/i,
+  ];
+
+  if (!moduleBlocks.every((block) => requiredModulePatterns.every((pattern) => pattern.test(block.body)))) {
+    return "incomplete";
+  }
+
+  const hasUsableModuleEvidence = moduleBlocks.every((block) => {
+    const tokenEvidence = evidenceLineValue(block, "Token evidence");
+    const snapshotEvidence = evidenceLineValue(block, "Snapshot evidence");
+    return hasUsableEvidenceValue(tokenEvidence) && hasUsableEvidenceValue(snapshotEvidence);
+  });
+
+  if (!hasUsableModuleEvidence) return "incomplete";
+
+  const checklist = markdownSection(text, "Coding Gate Checklist");
+  const hasTokenChecklist = /token|design-token-patch\.md|样式值|Design Tokens?/i.test(checklist);
+  const hasSnapshotChecklist = /snapshot|visual baseline|visual validation|视觉验证|视觉基线/i.test(checklist);
+
+  return hasTokenChecklist && hasSnapshotChecklist ? "generated" : "incomplete";
+}
+
 function hasSkipAudit(featureDir, checkpoint, skill) {
   const audit = readTextIfExists(path.join(featureDir, "inputs.md"));
   if (!audit) return false;
@@ -51,7 +143,8 @@ function hasSkipAudit(featureDir, checkpoint, skill) {
 
 function applyAuditedSkips(featureDir, checkpoint, items) {
   return items.map((item) => {
-    if (item.status !== "missing" || !hasSkipAudit(featureDir, checkpoint, item.skill)) {
+    const skippableStatus = ["missing", "incomplete"].includes(item.status);
+    if (!skippableStatus || !hasSkipAudit(featureDir, checkpoint, item.skill)) {
       return item;
     }
 
@@ -90,13 +183,13 @@ function inferEngineeringCheckpoint(featureDir, options = {}) {
     skill: "figma-emit-spec",
     product: "implementation-evidence.md",
     status: checkpoint === "pre-handoff"
-      ? productStatus(featureDir, "implementation-evidence.md")
+      ? implementationEvidenceStatus(featureDir)
       : "not_applicable",
     recommendation: checkpoint === "pre-handoff" ? "required_prompt" : "available",
     reason: checkpoint === "pre-handoff"
-      ? "pre-handoff must record which upstream artifacts implementation must consume"
+      ? "pre-handoff must include module-level structure, token, behavior, and snapshot evidence"
       : "available when the user asks about implementation evidence or handoff readiness",
-    risk: "implementation may use implementation-spec alone and ignore UI structure, token, or snapshot evidence",
+    risk: "implementation may ignore design-token-patch.md or skip snapshot validation",
   });
 
   items.push({
@@ -191,6 +284,7 @@ function runCli(argv) {
 module.exports = {
   appendSkipAudit,
   canContinueToHandoff,
+  implementationEvidenceStatus,
   inferEngineeringCheckpoint,
   renderEngineeringCheckpoint,
 };

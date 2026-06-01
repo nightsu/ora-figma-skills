@@ -11,6 +11,41 @@ function write(filePath, content) {
   fs.writeFileSync(filePath, content);
 }
 
+function validImplementationEvidence() {
+  return [
+    "# Implementation Evidence — referral-home",
+    "",
+    "> Required coding gate. Do not implement from `implementation-spec.md` alone.",
+    "",
+    "## Required Files Before Coding",
+    "| Evidence Type | File | Must Read | Purpose |",
+    "|---|---|---|---|",
+    "| UI Structure | ui-understanding.md | yes | layout, control shape, visible labels |",
+    "| Design Tokens | design-token-patch.md | yes | dimensions, spacing, colors, radius, typography, states |",
+    "| Implementation Spec | implementation-spec.md | yes | behavior, state, integration constraints |",
+    "",
+    "## Evidence by Module",
+    "### ReferralHero",
+    "- Structure evidence: `ui-understanding.md#referralhero`",
+    "- Token evidence: `design-token-patch.md#referralhero`",
+    "- Behavior/API evidence: `implementation-spec.md#referralhero`",
+    "- Snapshot evidence: `snapshots/default.png`",
+    "- Do not implement from assumption:",
+    "  - Do not replace the hero CTA shape with a default primary button unless ui-understanding records it.",
+    "",
+    "## Conflict / Deviation Log",
+    "| Item | Upstream Conflict or Deviation | Decision | Owner |",
+    "|---|---|---|---|",
+    "| none | none | follow upstream evidence | human |",
+    "",
+    "## Coding Gate Checklist",
+    "- [ ] Style values were checked against token evidence from `design-token-patch.md`",
+    "- [ ] Snapshot / visual baseline validation is required before completion",
+    "- [ ] Intentional deviations are recorded in the deviation log",
+    "",
+  ].join("\n");
+}
+
 test("infers required pre-handoff prompts from feature products", () => {
   const featureDir = fs.mkdtempSync(path.join(os.tmpdir(), "engineering-checkpoint-"));
   write(path.join(featureDir, "implementation-spec.md"), "# Implementation Spec\n");
@@ -82,6 +117,126 @@ test("requires implementation evidence gate before handoff", () => {
   assert.equal(evidence.status, "missing");
   assert.equal(evidence.recommendation, "required_prompt");
   assert.equal(checkpoint.canContinueToHandoff(state), false);
+});
+
+test("marks empty implementation evidence as incomplete", () => {
+  const featureDir = fs.mkdtempSync(path.join(os.tmpdir(), "engineering-empty-evidence-"));
+  write(path.join(featureDir, "implementation-evidence.md"), "");
+
+  assert.equal(checkpoint.implementationEvidenceStatus(featureDir), "incomplete");
+});
+
+test("marks title-only implementation evidence as incomplete", () => {
+  const featureDir = fs.mkdtempSync(path.join(os.tmpdir(), "engineering-title-evidence-"));
+  write(path.join(featureDir, "implementation-evidence.md"), "# Implementation Evidence — referral-home\n");
+
+  assert.equal(checkpoint.implementationEvidenceStatus(featureDir), "incomplete");
+});
+
+test("marks implementation evidence without module blocks as incomplete", () => {
+  const featureDir = fs.mkdtempSync(path.join(os.tmpdir(), "engineering-no-module-evidence-"));
+  write(path.join(featureDir, "implementation-evidence.md"), [
+    "# Implementation Evidence — referral-home",
+    "",
+    "## Required Files Before Coding",
+    "- ui-understanding.md",
+    "- design-token-patch.md",
+    "- implementation-spec.md",
+    "",
+    "## Evidence by Module",
+    "",
+    "## Coding Gate Checklist",
+    "- [ ] Token evidence was checked",
+    "- [ ] Snapshot validation was checked",
+    "",
+  ].join("\n"));
+
+  assert.equal(checkpoint.implementationEvidenceStatus(featureDir), "incomplete");
+});
+
+test("marks implementation evidence without token evidence as incomplete", () => {
+  const featureDir = fs.mkdtempSync(path.join(os.tmpdir(), "engineering-no-token-evidence-"));
+  write(path.join(featureDir, "implementation-evidence.md"), validImplementationEvidence().replace(
+    "- Token evidence: `design-token-patch.md#referralhero`\n",
+    ""
+  ));
+
+  assert.equal(checkpoint.implementationEvidenceStatus(featureDir), "incomplete");
+});
+
+test("marks implementation evidence without snapshot evidence as incomplete", () => {
+  const featureDir = fs.mkdtempSync(path.join(os.tmpdir(), "engineering-no-snapshot-evidence-"));
+  write(path.join(featureDir, "implementation-evidence.md"), validImplementationEvidence().replace(
+    "- Snapshot evidence: `snapshots/default.png`\n",
+    ""
+  ));
+
+  assert.equal(checkpoint.implementationEvidenceStatus(featureDir), "incomplete");
+});
+
+test("marks missing token evidence value as incomplete", () => {
+  const featureDir = fs.mkdtempSync(path.join(os.tmpdir(), "engineering-missing-token-value-"));
+  write(path.join(featureDir, "implementation-evidence.md"), validImplementationEvidence().replace(
+    "- Token evidence: `design-token-patch.md#referralhero`",
+    "- Token evidence: <missing>"
+  ));
+
+  assert.equal(checkpoint.implementationEvidenceStatus(featureDir), "incomplete");
+});
+
+test("marks missing snapshot evidence value as incomplete", () => {
+  const featureDir = fs.mkdtempSync(path.join(os.tmpdir(), "engineering-missing-snapshot-value-"));
+  write(path.join(featureDir, "implementation-evidence.md"), validImplementationEvidence().replace(
+    "- Snapshot evidence: `snapshots/default.png`",
+    "- Snapshot evidence: <missing>"
+  ));
+
+  assert.equal(checkpoint.implementationEvidenceStatus(featureDir), "incomplete");
+});
+
+test("marks complete implementation evidence as generated", () => {
+  const featureDir = fs.mkdtempSync(path.join(os.tmpdir(), "engineering-valid-evidence-"));
+  write(path.join(featureDir, "implementation-evidence.md"), validImplementationEvidence());
+
+  assert.equal(checkpoint.implementationEvidenceStatus(featureDir), "generated");
+});
+
+test("blocks handoff when implementation evidence is incomplete", () => {
+  const featureDir = fs.mkdtempSync(path.join(os.tmpdir(), "engineering-incomplete-evidence-"));
+  write(path.join(featureDir, "implementation-evidence.md"), "# Implementation Evidence — referral-home\n");
+  write(path.join(featureDir, "assets-manifest.md"), "# Assets\n");
+  write(path.join(featureDir, "validation-report.md"), "# Validation\n");
+
+  const state = checkpoint.inferEngineeringCheckpoint(featureDir, { checkpoint: "pre-handoff" });
+  const evidence = state.items.find((item) => item.skill === "figma-emit-spec");
+
+  assert.equal(evidence.status, "incomplete");
+  assert.equal(evidence.recommendation, "required_prompt");
+  assert.equal(checkpoint.canContinueToHandoff(state), false);
+});
+
+test("treats audited incomplete implementation evidence skip as handled", () => {
+  const featureDir = fs.mkdtempSync(path.join(os.tmpdir(), "engineering-skip-incomplete-evidence-"));
+  write(path.join(featureDir, "implementation-evidence.md"), "# Implementation Evidence — referral-home\n");
+  write(path.join(featureDir, "assets-manifest.md"), "# Assets\n");
+  write(path.join(featureDir, "validation-report.md"), "# Validation\n");
+
+  const firstState = checkpoint.inferEngineeringCheckpoint(featureDir, { checkpoint: "pre-handoff" });
+  const skipped = firstState.items.filter((item) => item.skill === "figma-emit-spec");
+
+  checkpoint.appendSkipAudit(featureDir, {
+    checkpoint: "pre-handoff",
+    phaseContext: "after_phase_e_review",
+    skipped,
+    continueField: "continue_to_handoff",
+    now: "2026-06-01T12:00:00+08:00",
+  });
+
+  const nextState = checkpoint.inferEngineeringCheckpoint(featureDir, { checkpoint: "pre-handoff" });
+  const evidence = nextState.items.find((item) => item.skill === "figma-emit-spec");
+
+  assert.equal(evidence.status, "skipped");
+  assert.equal(checkpoint.canContinueToHandoff(nextState), true);
 });
 
 test("appends skip audit without changing products", () => {
