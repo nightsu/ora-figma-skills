@@ -52,6 +52,16 @@ function evidenceModuleBlocks(text) {
   });
 }
 
+function evidenceLineValue(block, label) {
+  const pattern = new RegExp(`^\\s*-\\s*${escapeRegExp(label)}\\s*:\\s*(.+)$`, "im");
+  const match = pattern.exec(block.body);
+  return match ? match[1].trim() : "";
+}
+
+function hasUsableEvidenceValue(value) {
+  return Boolean(value) && !/<missing>|<待\s*P15\s*回填>|待\s*P15\s*回填/i.test(value);
+}
+
 function hasUnknownOrOpenQuestions(featureDir) {
   const candidates = [
     "component-mapping.md",
@@ -104,6 +114,14 @@ function implementationEvidenceStatus(featureDir) {
   if (!moduleBlocks.every((block) => requiredModulePatterns.every((pattern) => pattern.test(block.body)))) {
     return "incomplete";
   }
+
+  const hasUsableModuleEvidence = moduleBlocks.every((block) => {
+    const tokenEvidence = evidenceLineValue(block, "Token evidence");
+    const snapshotEvidence = evidenceLineValue(block, "Snapshot evidence");
+    return hasUsableEvidenceValue(tokenEvidence) && hasUsableEvidenceValue(snapshotEvidence);
+  });
+
+  if (!hasUsableModuleEvidence) return "incomplete";
 
   const checklist = markdownSection(text, "Coding Gate Checklist");
   const hasTokenChecklist = /token|design-token-patch\.md|样式值|Design Tokens?/i.test(checklist);

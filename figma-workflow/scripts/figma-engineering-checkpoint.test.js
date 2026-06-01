@@ -174,6 +174,26 @@ test("marks implementation evidence without snapshot evidence as incomplete", ()
   assert.equal(checkpoint.implementationEvidenceStatus(featureDir), "incomplete");
 });
 
+test("marks missing token evidence value as incomplete", () => {
+  const featureDir = fs.mkdtempSync(path.join(os.tmpdir(), "engineering-missing-token-value-"));
+  write(path.join(featureDir, "implementation-evidence.md"), validImplementationEvidence().replace(
+    "- Token evidence: `design-token-patch.md#referralhero`",
+    "- Token evidence: <missing>"
+  ));
+
+  assert.equal(checkpoint.implementationEvidenceStatus(featureDir), "incomplete");
+});
+
+test("marks missing snapshot evidence value as incomplete", () => {
+  const featureDir = fs.mkdtempSync(path.join(os.tmpdir(), "engineering-missing-snapshot-value-"));
+  write(path.join(featureDir, "implementation-evidence.md"), validImplementationEvidence().replace(
+    "- Snapshot evidence: `snapshots/default.png`",
+    "- Snapshot evidence: <missing>"
+  ));
+
+  assert.equal(checkpoint.implementationEvidenceStatus(featureDir), "incomplete");
+});
+
 test("marks complete implementation evidence as generated", () => {
   const featureDir = fs.mkdtempSync(path.join(os.tmpdir(), "engineering-valid-evidence-"));
   write(path.join(featureDir, "implementation-evidence.md"), validImplementationEvidence());
