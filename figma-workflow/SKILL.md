@@ -292,11 +292,13 @@ Phase E handoff 是 OpenSpec / planning / task breakdown 等准备阶段的入�
 - **Snapshot evidence**: 来自 `snapshots/default.png` 或 P15 baseline 的视觉验证点
 - **Deviation log**: 任何偏离上游证据的实现选择和原因
 
-缺少 module-level token evidence、snapshot evidence 或 coding checklist 时,`implementation-evidence.md` 状态为 `incomplete`。
+质量通过的 generated gate 中,Token evidence 不能写 `<missing>`;缺少 module-level token evidence 时,`implementation-evidence.md` 状态为 `incomplete`。
+Snapshot evidence 字段必须存在。`<missing>` / `<待 P15 回填>` 只允许作为 P15 回填前或 P15 已显式 skip/audit 后的 risk marker,表示 unresolved snapshot evidence 仍是 handoff risk,不能视为完整 visual validation。
+缺少 module-level token evidence、缺少 Snapshot evidence 字段或缺少 Coding Gate Checklist 时,`implementation-evidence.md` 状态为 `incomplete`。
 skip 风险必须明确写出:下游实现可能不遵守 `design-token-patch.md`,也可能跳过 snapshot / visual baseline validation。
 
 下游实现 agent 在每个 feature 开始编码前必须先读 `implementation-evidence.md` 列出的证据文件。若 `ui-understanding.md`、`design-token-patch.md`、`implementation-spec.md` 互相冲突,必须先记录冲突和采用依据,不能用常见组件形态或个人推测代替 Figma 证据。
-coding agent 完成前必须留下 `implementation-verification.md`,记录已读 evidence、module-level token 应用、snapshot / visual baseline validation 和 intentional deviations。build/unit tests alone are not design verification。
+coding agent 在声明 coding complete 前必须填写 `docs/design/<feature>/implementation-verification.md`,记录已读 evidence、module-level token 应用、snapshot / visual baseline validation 和 intentional deviations。build/unit tests alone are not design verification。
 
 ## 错误处理
 

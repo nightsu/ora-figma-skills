@@ -304,7 +304,9 @@ Phase E handoff 进入的是 OpenSpec / planning / task breakdown 等准备阶�
 
 `implementation-spec.md` 不是 coding 阶段唯一输入。handoff 前必须有质量通过的 `implementation-evidence.md`,或用户显式 audited skip。`implementation-evidence.md` 缺失或 `incomplete` 都阻塞 handoff,不能静默进入 handoff。
 
-后续实现 agent 必须根据 `implementation-evidence.md` 读取 `ui-understanding.md`、`design-token-patch.md`、`implementation-spec.md` 和 snapshot baseline,并在完成前留下 `implementation-verification.md`。`implementation-verification.md` 必须记录 evidence 读取、module-level token 应用、snapshot / visual baseline validation 和 intentional deviations。
+后续实现 agent 必须根据 `implementation-evidence.md` 读取 `ui-understanding.md`、`design-token-patch.md`、`implementation-spec.md` 和 snapshot baseline,并在声明 coding complete 前填写 `docs/design/<feature>/implementation-verification.md`。`docs/design/<feature>/implementation-verification.md` 必须记录 evidence 读取、module-level token 应用、snapshot / visual baseline validation 和 intentional deviations。
+
+Token evidence 不能在质量通过的 generated gate 中写 `<missing>`。Snapshot evidence 字段必须存在;`<missing>` / `<待 P15 回填>` 只允许作为 P15 回填前或 P15 已显式 skip/audit 后的 risk marker,表示 unresolved snapshot evidence 仍是 handoff risk,不能视为完整 visual validation。缺少 module-level token evidence、缺少 Snapshot evidence 字段或缺少 Coding Gate Checklist 时,`implementation-evidence.md` 状态为 `incomplete`,除非用户显式 skip 并 audit。
 
 Risk notes 示例:
 
