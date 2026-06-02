@@ -14,16 +14,17 @@ flowchart LR
   B --> C1["Phase C1<br/>API 优先映射<br/>api-mapping.md"]
   C1 --> C2["Phase C2<br/>UI/API 组件映射<br/>component-mapping.md"]
   C2 --> D["Phase D<br/>设计 Token 提取<br/>design-token-patch.md"]
-  D --> E["Phase E<br/>实施规格生成<br/>implementation-spec.md<br/>open-questions.md"]
+  D --> E["Phase E<br/>实施规格生成<br/>implementation-spec.md<br/>implementation-evidence.md<br/>open-questions.md"]
 
   Cache["Cache evidence<br/>.figma-cache/"] -.-> C2
   Cache -.-> D
   Cache -.-> Diff["Design Diff<br/>design-diff.md"]
   Diff -.-> Gate["交接前工程化检查"]
+  E --> EvidenceGate["Implementation Evidence Gate<br/>quality check"]
+  EvidenceGate --> Gate
   UIHandoff["UI Handoff<br/>ui-handoff.md"] -.-> Gate
   Assets["Assets / Validation<br/>assets-manifest.md<br/>validation-report.md"] -.-> Gate
 
-  E --> Gate
   Gate --> Planning["OpenSpec / planning / task-breakdown"]
   Planning --> Coding["用户确认后进入 coding"]
 ```
@@ -38,7 +39,7 @@ flowchart LR
 - `figma-api-first`:把接口结构整理成 `api-mapping.md`(phase C1)
 - `figma-ui-api-mapper`:清理 Figma 节点,合并 `api-mapping.md`,输出 `component-mapping.md`(phase C2,renamed from `figma-api-mapper`)
 - `figma-design-token`:从 Figma node 抽取视觉 token,输出 `design-token-patch.md`(phase D)
-- `figma-emit-spec`:合并上游产物,输出 `implementation-spec.md` + `open-questions.md`,提供 handoff 出口(phase E)
+- `figma-emit-spec`:合并上游产物,输出 `implementation-spec.md` + `implementation-evidence.md` + `open-questions.md`,提供 handoff 出口(phase E)
 
 ### 工程化技能
 
@@ -46,6 +47,9 @@ flowchart LR
 - P13 `figma-design-diff`:基于 `.figma-cache/` before/current evidence 生成 `design-diff.md`,提示 recommended rerun phases
 - P14 `figma-ui-handoff`:生成 `ui-handoff.md`,帮助设计/产品补齐上游交接信息
 - P15 `figma-assets-validate`:生成 `assets-manifest.md` 与 `validation-report.md`,收口资源交付和自动化验证
+- Implementation evidence gate:handoff 前检查 `implementation-evidence.md` 是否包含 module-level token evidence、snapshot evidence 和 coding checklist;缺失或不完整时阻塞 handoff,除非用户显式 skip 并写入 audit
+
+下游 coding agent 在声明 coding complete 前必须填写 `docs/design/<feature>/implementation-verification.md`,记录已读 evidence、token 应用、snapshot / visual baseline validation 和 intentional deviations。
 
 ## 安装
 

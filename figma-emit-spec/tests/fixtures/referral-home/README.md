@@ -7,12 +7,13 @@
 
 ## 用途
 
-人工 review 验证。让 Agent 读 `inputs/` 下的 5 份模拟产物,合成 `implementation-spec.md` + `open-questions.md`,
+人工 review 验证。让 Agent 读 `inputs/` 下的 5 份模拟产物,合成 `implementation-spec.md` + `implementation-evidence.md` + `open-questions.md`,
 和 `expected/` 对比,确认**关键行为**:
 - `label_drift` 自动校正(C2 槽位 label 被 D 真实 label 覆盖)
 - `[deferred]` 标记在 spec 中显式标"本期不实现"
 - 跨产物冲突写入 open-questions(field_unbound / module_missing_token / module_drift)
 - 6 phase 分段汇总 open questions
+- `implementation-evidence.md` 作为 coding 前证据门禁,要求后续实现读取 UI structure、module-level token、behavior/API 和 snapshot evidence
 
 ## 注入的测试场景
 
@@ -29,8 +30,12 @@
 - `inputs/api-mapping.md` — phase C1 模拟产物
 - `inputs/component-mapping.md` — phase C2 模拟产物(故意含 label_drift)
 - `inputs/design-token-patch.md` — phase D 模拟产物(直接复用 P2 fixture)
-- `expected/implementation-spec.md` — 期望主产物
+- `expected/implementation-spec.md` — 期望 planning/spec authoring 主产物
 - `expected/open-questions.md` — 期望 open-questions 汇总
+
+待补齐:
+
+- `expected/implementation-evidence.md` — 期望 coding evidence gate 产物
 
 ## 验证方式
 
