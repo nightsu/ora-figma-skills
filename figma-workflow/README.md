@@ -36,6 +36,8 @@ docs/design/<feature>/
 ├── assets-manifest.md
 ├── validation-report.md
 ├── implementation-spec.md
+├── implementation-evidence.md
+├── implementation-verification.md
 └── open-questions.md
 ```
 
@@ -46,12 +48,13 @@ docs/design/<feature>/
 - phase C1:`figma-api-first` → `api-mapping.md`
 - phase C2:`figma-ui-api-mapper` → `component-mapping.md`
 - phase D:`figma-design-token` → `design-token-patch.md`
-- phase E:`figma-emit-spec` → `implementation-spec.md` + `open-questions.md`
+- phase E:`figma-emit-spec` → `implementation-spec.md` + `implementation-evidence.md` + `open-questions.md`
 
 Phase E review gate 通过后,进入交接前工程化检查:
 
 - `figma-design-diff` → `design-diff.md`
 - `figma-ui-handoff` → `ui-handoff.md`
+- `figma-emit-spec` → `implementation-evidence.md` quality gate
 - `figma-assets-validate` → `assets-manifest.md` + `validation-report.md`
 
 ## 交接前检查与 Handoff
@@ -60,8 +63,12 @@ phase E review gate 通过后,先进入交接前工程化检查。检查项处�
 
 - builtin:`task-breakdown.md`
 - `superpowers:writing-plans`
-- manual:用户自己拿 `implementation-spec.md` 去实现
-- pause:先编辑 `open-questions.md` / `implementation-spec.md`
+- manual:用户自己拿 `implementation-spec.md` + `implementation-evidence.md` 去规划或实现
+- pause:先编辑 `open-questions.md` / `implementation-spec.md` / `implementation-evidence.md`
+
+`implementation-evidence.md` 是 handoff 前 required prompt。workflow 会检查它是否包含 module-level token evidence、Snapshot evidence 字段和 Coding Gate Checklist。文件缺失或状态为 `incomplete` 时,不能静默进入 handoff;用户可以显式 skip,但 skip 会写入 `inputs.md` audit 并保留风险。
+
+下游 coding agent 在声明 coding complete 前必须填写 `docs/design/<feature>/implementation-verification.md`,记录已读 evidence、token 应用、snapshot / visual baseline validation 和 intentional deviations。普通 build / unit tests 不能替代设计验证。
 
 ## 详细规约
 

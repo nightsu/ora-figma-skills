@@ -11,9 +11,11 @@
 - Phase A 优先路由到 `figma-clarify-requirement`,不可用时 fallback 到模板。
 - Phase B 优先路由到 `figma-ui-understand`,不可用时 fallback 到模板。
 - Phase C1 在 v2 仍手填 `api-mapping.md`,未来再由 `figma-api-first` 替代。
-- Phase E 只产出 `implementation-spec.md` / `open-questions.md` 并展示 handoff 菜单。
+- Phase E 产出 `implementation-spec.md` / `implementation-evidence.md` / `open-questions.md` 并展示 handoff 菜单。
+- handoff 前必须处理 `implementation-evidence.md` quality gate;缺失或 `incomplete` 不能静默进入 handoff。
 - handoff 后可进入 OpenSpec / planning / task breakdown 等准备阶段。
 - 业务代码只能在用户明确确认执行 coding 后开始。
+- coding agent 声明完成前需要填写 `docs/design/<feature>/implementation-verification.md`,记录 token 应用和 snapshot / visual baseline validation。
 
 ## 关联 fixture
 
