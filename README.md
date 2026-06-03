@@ -1,112 +1,130 @@
 # ora-figma-skills
 
-面向 Codex 和 Claude Code 的 Figma workflow skills 仓库。
+**English** | [中文](./README.zh-CN.md)
 
-`ora-figma-skills` 聚焦把 Figma 设计上下文、需求说明、接口结构和 UI/API 映射整理成 coding 前可审阅的工程交接材料。它只负责设计实现准备和工程化检查,不会直接写业务代码。
+Figma workflow skills for Codex and Claude Code.
 
-## figma-workflow-suite
+`ora-figma-skills` turns Figma design context, product requirements, API structures, and UI/API mappings into reviewable engineering handoff materials before coding starts. The suite focuses on preparation, validation, and handoff. It does not directly modify business application code.
 
-`figma-workflow` 是入口编排器,按 `docs/design/<feature>/` 下的产物状态推进 Phase A-E,并在 handoff 前展示工程化检查点。
+## What This Repository Provides
+
+- Standalone Codex skills for Figma-to-engineering workflows.
+- A Claude Code plugin distribution for the same skills.
+- A phase-based workflow that produces structured Markdown artifacts under `docs/design/<feature>/`.
+- Engineering checks for design diffs, UI handoff quality, asset readiness, validation reports, and implementation evidence.
+
+## Figma Workflow Suite
+
+`figma-workflow` is the orchestrator. It reads the artifact state in `docs/design/<feature>/`, advances the workflow across Phase A-E, and shows review gates before handoff.
 
 ```mermaid
 flowchart LR
-  A["Phase A<br/>需求澄清<br/>clarified-requirement.md"] --> B["Phase B<br/>UI 理解<br/>ui-understanding.md"]
-  B --> C1["Phase C1<br/>API 优先映射<br/>api-mapping.md"]
-  C1 --> C2["Phase C2<br/>UI/API 组件映射<br/>component-mapping.md"]
-  C2 --> D["Phase D<br/>设计 Token 提取<br/>design-token-patch.md"]
-  D --> E["Phase E<br/>实施规格生成<br/>implementation-spec.md<br/>implementation-evidence.md<br/>open-questions.md"]
+  A["Phase A<br/>Requirement Clarification<br/>clarified-requirement.md"] --> B["Phase B<br/>UI Understanding<br/>ui-understanding.md"]
+  B --> C1["Phase C1<br/>API-first Mapping<br/>api-mapping.md"]
+  C1 --> C2["Phase C2<br/>UI/API Component Mapping<br/>component-mapping.md"]
+  C2 --> D["Phase D<br/>Design Token Extraction<br/>design-token-patch.md"]
+  D --> E["Phase E<br/>Implementation Spec<br/>implementation-spec.md<br/>implementation-evidence.md<br/>open-questions.md"]
 
-  Cache["Cache evidence<br/>.figma-cache/"] -.-> C2
+  Cache["Cache Evidence<br/>.figma-cache/"] -.-> C2
   Cache -.-> D
   Cache -.-> Diff["Design Diff<br/>design-diff.md"]
-  Diff -.-> Gate["交接前工程化检查"]
+  Diff -.-> Gate["Pre-handoff Engineering Checks"]
   E --> EvidenceGate["Implementation Evidence Gate<br/>quality check"]
   EvidenceGate --> Gate
   UIHandoff["UI Handoff<br/>ui-handoff.md"] -.-> Gate
   Assets["Assets / Validation<br/>assets-manifest.md<br/>validation-report.md"] -.-> Gate
 
   Gate --> Planning["OpenSpec / planning / task-breakdown"]
-  Planning --> Coding["用户确认后进入 coding"]
+  Planning --> Coding["Coding starts after user confirmation"]
 ```
 
-主链路保持 7 个 skill:`figma-workflow` + Phase A-E 的 6 个阶段 skill。工程化能力按需使用,不改变 Phase A-E 的 coding boundary。
+The main workflow keeps seven skills in the critical path: `figma-workflow` plus the six Phase A-E skills. Engineering skills are used as needed and do not change the Phase A-E coding boundary.
 
-### 主链路技能
+## Skills
 
-- `figma-workflow`:按 `docs/design/<feature>/` 产物状态驱动 workflow,展示进度面板、review gate、工程化检查和 handoff 出口
-- `figma-clarify-requirement`:把用户需求整理成 `clarified-requirement.md`(phase A)
-- `figma-ui-understand`:从 Figma node 提取页面结构和 UI 语义,输出 `ui-understanding.md`(phase B)
-- `figma-api-first`:把接口结构整理成 `api-mapping.md`(phase C1)
-- `figma-ui-api-mapper`:清理 Figma 节点,合并 `api-mapping.md`,输出 `component-mapping.md`(phase C2,renamed from `figma-api-mapper`)
-- `figma-design-token`:从 Figma node 抽取视觉 token,输出 `design-token-patch.md`(phase D)
-- `figma-emit-spec`:合并上游产物,输出 `implementation-spec.md` + `implementation-evidence.md` + `open-questions.md`,提供 handoff 出口(phase E)
+### Main Workflow
 
-### 工程化技能
+- `figma-workflow`: orchestrates the workflow from artifact state, shows progress panels, review gates, engineering checks, and handoff options.
+- `figma-clarify-requirement`: turns user requirements into `clarified-requirement.md` for Phase A.
+- `figma-ui-understand`: extracts page structure, repeated patterns, component candidates, and UI semantics from a Figma node into `ui-understanding.md` for Phase B.
+- `figma-api-first`: turns API structures, response types, or field lists into `api-mapping.md` for Phase C1.
+- `figma-ui-api-mapper`: merges Figma node context with `api-mapping.md` and produces `component-mapping.md` for Phase C2.
+- `figma-design-token`: extracts visual tokens from a Figma node and produces `design-token-patch.md` for Phase D.
+- `figma-emit-spec`: merges upstream artifacts into `implementation-spec.md`, `implementation-evidence.md`, and `open-questions.md` for Phase E.
 
-- P12 `figma cache layer`:在 `docs/design/<feature>/.figma-cache/` 缓存 Figma MCP evidence,供 C2/D 和后续 diff 复用
-- P13 `figma-design-diff`:基于 `.figma-cache/` before/current evidence 生成 `design-diff.md`,提示 recommended rerun phases
-- P14 `figma-ui-handoff`:生成 `ui-handoff.md`,帮助设计/产品补齐上游交接信息
-- P15 `figma-assets-validate`:生成 `assets-manifest.md` 与 `validation-report.md`,收口资源交付和自动化验证
-- Implementation evidence gate:handoff 前检查 `implementation-evidence.md` 是否包含 module-level token evidence、snapshot evidence 和 coding checklist;缺失或不完整时阻塞 handoff,除非用户显式 skip 并写入 audit
+### Engineering Checks
 
-下游 coding agent 在声明 coding complete 前必须填写 `docs/design/<feature>/implementation-verification.md`,记录已读 evidence、token 应用、snapshot / visual baseline validation 和 intentional deviations。
+- `figma-design-diff`: compares cached Figma evidence and produces `design-diff.md` with recommended rerun phases.
+- `figma-ui-handoff`: produces `ui-handoff.md` to help design and product teams fill missing upstream handoff details.
+- `figma-assets-validate`: produces `assets-manifest.md` and `validation-report.md` for asset delivery and validation readiness.
+- Implementation evidence gate: checks whether `implementation-evidence.md` includes module-level token evidence, snapshot evidence, and a coding checklist before handoff.
 
-## 安装
+Downstream coding agents must fill `docs/design/<feature>/implementation-verification.md` before claiming coding is complete. That file records evidence read, token usage, snapshot or visual baseline validation, and intentional deviations.
 
-推荐使用混合安装：
+## Install
 
-- Codex 使用 standalone skills
-- Claude Code 使用 `ora-figma-skills` plugin
+The recommended installation mode is mixed:
+
+- Codex uses standalone skills.
+- Claude Code uses the `ora-figma-skills` plugin.
 
 ```bash
 ./scripts/install.sh
 ```
 
-执行后：
+After running the script:
 
-- Codex 会把技能同步到本地 `~/.codex/skills`
-- Claude Code 会自动注册本仓库为 marketplace，并安装或更新 `ora-figma-skills@ora-figma-skills`
-- 脚本会顺手清理这套仓库在相反安装形态下留下的重复项
+- Codex skills are linked into `~/.codex/skills`.
+- Claude Code registers this repository as a marketplace and installs or updates `ora-figma-skills@ora-figma-skills`.
+- Duplicate installs left by the opposite installation mode are cleaned up.
 
-如果你明确想以 standalone skills 方式安装，再执行：
+To install only standalone Codex skills:
 
 ```bash
 ./scripts/install.sh skills
 ```
 
-这会只安装到 Codex 的 `~/.codex/skills`，不会再改动 Claude Code。
+## Update
 
-## 更新
-
-仓库更新后，重新运行同一个脚本即可刷新已安装内容。推荐继续使用默认混合模式：
+After pulling repository updates, run the same script again:
 
 ```bash
 ./scripts/install.sh
 ```
 
-如果你使用的是 standalone skills 模式，再执行：
+If you use standalone skills only, run:
 
 ```bash
 ./scripts/install.sh update
 ```
 
-`update` 会刷新默认混合模式，也就是：
+`update` refreshes the default mixed install:
 
-- Codex 更新 standalone skills
-- Claude Code 更新 `ora-figma-skills` plugin
-- 清理这套仓库在另一种安装形态下留下的重复项
+- Codex standalone skills are updated.
+- The Claude Code plugin is updated.
+- Duplicate stale installs are cleaned up.
 
-## 目标路径
+## Target Paths
 
-- Codex skills：`~/.codex/skills`
-- Claude Code skills：`~/.claude/skills`
-- Claude Code plugin：`~/.claude/plugins/ora-figma-skills`
+- Codex skills: `~/.codex/skills`
+- Claude Code skills: `~/.claude/skills`
+- Claude Code plugin: `~/.claude/plugins/ora-figma-skills`
 
-## 技能结构
+## Skill Directory Structure
 
-每个技能都放在独立目录里，并保持统一结构：
+Each skill lives in its own directory and generally follows this structure:
 
-- `SKILL.md`
-- `agents/openai.yaml`
-- `references/`
-- `scripts/`
+```text
+<skill-name>/
+├── SKILL.md
+├── agents/
+│   └── openai.yaml
+├── references/
+└── scripts/
+```
+
+Some skills omit `references/` or `scripts/` when they do not need those resources.
+
+## Repository Boundary
+
+This repository prepares implementation materials for business projects. It should not directly change downstream business code. Generated artifacts should stay in the target project's `docs/design/<feature>/` directory, while raw Figma evidence belongs in `.figma-cache/` and should not be copied into Phase A-E Markdown outputs.
