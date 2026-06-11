@@ -29,6 +29,8 @@
 | Token | Value | Source |
 |---|---|---|
 | columnCount | 4 | INFERRED (4-instance grid) |
+| itemWidth | 78px | direct |
+| itemHeight | 56px | direct |
 | itemGap | 8px | direct |
 | iconSize | 32px | direct |
 | labelFontSize | 12px | direct |

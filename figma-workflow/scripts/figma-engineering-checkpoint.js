@@ -74,6 +74,24 @@ function hasUnknownOrOpenQuestions(featureDir) {
   });
 }
 
+function unresolvedQuestionLines(text) {
+  return text.split(/\r?\n/).filter((line) => /^\s*-\s*\[\s*\]/.test(line));
+}
+
+function hasStructuredTokenGap(featureDir) {
+  const candidates = [
+    "design-token-patch.md",
+    "open-questions.md",
+  ];
+  const layoutPattern = /structured_token_gap|结构化布局|表格|数据网格|列表|重复行|网格|卡片组|菜单组|表单|工具栏|nested|table|grid|list|card group|toolbar|form|column|row|cell|repeat/i;
+  const tokenPattern = /token|尺寸|列宽|列比例|项宽|行高|槽位|cell|padding|width|height|column|row|item|slot/i;
+
+  return candidates.some((fileName) => {
+    const text = readTextIfExists(path.join(featureDir, fileName));
+    return unresolvedQuestionLines(text).some((line) => layoutPattern.test(line) && tokenPattern.test(line));
+  });
+}
+
 function productStatus(featureDir, product) {
   const products = product.split(",").map((name) => name.trim()).filter(Boolean);
   return products.every((fileName) => exists(path.join(featureDir, fileName))) ? "generated" : "missing";
@@ -122,6 +140,8 @@ function implementationEvidenceStatus(featureDir) {
   });
 
   if (!hasUsableModuleEvidence) return "incomplete";
+
+  if (hasStructuredTokenGap(featureDir)) return "incomplete";
 
   const checklist = markdownSection(text, "Coding Gate Checklist");
   const hasTokenChecklist = /token|design-token-patch\.md|样式值|Design Tokens?/i.test(checklist);

@@ -75,6 +75,7 @@
           "id": "200:121",
           "name": "EntryItem",
           "type": "INSTANCE",
+          "absoluteBoundingBox": { "width": 78, "height": 56 },
           "children": [
             { "id": "200:122", "name": "entry_icon", "type": "VECTOR", "absoluteBoundingBox": { "width": 32, "height": 32 } },
             { "id": "200:123", "name": "entry_label", "type": "TEXT", "characters": "邀请", "style": { "fontFamily": "Inter", "fontSize": 12, "fontWeight": 400, "fontStyle": "Regular" } }
@@ -84,6 +85,7 @@
           "id": "200:124",
           "name": "EntryItem",
           "type": "INSTANCE",
+          "absoluteBoundingBox": { "width": 78, "height": 56 },
           "children": [
             { "id": "200:125", "name": "entry_icon", "type": "VECTOR", "absoluteBoundingBox": { "width": 32, "height": 32 } },
             { "id": "200:126", "name": "entry_label", "type": "TEXT", "characters": "兑换", "style": { "fontFamily": "Inter", "fontSize": 12, "fontWeight": 400, "fontStyle": "Regular" } }
@@ -93,6 +95,7 @@
           "id": "200:127",
           "name": "EntryItem",
           "type": "INSTANCE",
+          "absoluteBoundingBox": { "width": 78, "height": 56 },
           "children": [
             { "id": "200:128", "name": "entry_icon", "type": "VECTOR", "absoluteBoundingBox": { "width": 32, "height": 32 } },
             { "id": "200:129", "name": "entry_label", "type": "TEXT", "characters": "任务", "style": { "fontFamily": "Inter", "fontSize": 12, "fontWeight": 400, "fontStyle": "Regular" } }
@@ -102,6 +105,7 @@
           "id": "200:130",
           "name": "EntryItem",
           "type": "INSTANCE",
+          "absoluteBoundingBox": { "width": 78, "height": 56 },
           "children": [
             { "id": "200:131", "name": "entry_icon", "type": "VECTOR", "absoluteBoundingBox": { "width": 32, "height": 32 } },
             { "id": "200:132", "name": "entry_label", "type": "TEXT", "characters": "排行", "style": { "fontFamily": "Inter", "fontSize": 12, "fontWeight": 400, "fontStyle": "Regular" } }

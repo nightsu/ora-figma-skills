@@ -4,6 +4,7 @@ Part of the **figma-workflow-suite** —— phase D.
 读取上游 `component-mapping.md` + 用户提供的 Figma node,
 从节点抽取视觉 token(尺寸 / 字体 / 字重 / 色值 / 间距 / 圆角 / 资源引用),
 输出可审阅的 `design-token-patch.md`。
+表格、列表、网格等结构化布局需要同时记录容器和子项尺寸;缺少列宽、项宽、行高或关键槽位尺寸时必须进入 Open Questions。
 
 ## Quick start
 

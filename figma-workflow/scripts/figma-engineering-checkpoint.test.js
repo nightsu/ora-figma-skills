@@ -201,6 +201,34 @@ test("marks complete implementation evidence as generated", () => {
   assert.equal(checkpoint.implementationEvidenceStatus(featureDir), "generated");
 });
 
+test("marks unresolved structured layout token gaps as incomplete", () => {
+  const featureDir = fs.mkdtempSync(path.join(os.tmpdir(), "engineering-structured-token-gap-"));
+  write(path.join(featureDir, "implementation-evidence.md"), validImplementationEvidence());
+  write(path.join(featureDir, "open-questions.md"), [
+    "# Open Questions — structured-layout",
+    "",
+    "## From Phase D (design-token-patch.md, INFERRED)",
+    "- [ ] StudentDetails.nested.column.content.width 未从 Figma evidence 中抽出,实现前需补充列宽 token 或由设计确认。",
+    "",
+  ].join("\n"));
+
+  assert.equal(checkpoint.implementationEvidenceStatus(featureDir), "incomplete");
+});
+
+test("ignores resolved structured layout token questions", () => {
+  const featureDir = fs.mkdtempSync(path.join(os.tmpdir(), "engineering-resolved-structured-token-gap-"));
+  write(path.join(featureDir, "implementation-evidence.md"), validImplementationEvidence());
+  write(path.join(featureDir, "open-questions.md"), [
+    "# Open Questions — structured-layout",
+    "",
+    "## From Phase D (design-token-patch.md, INFERRED)",
+    "- [x] StudentDetails.nested.column.content.width 已由设计确认。",
+    "",
+  ].join("\n"));
+
+  assert.equal(checkpoint.implementationEvidenceStatus(featureDir), "generated");
+});
+
 test("blocks handoff when implementation evidence is incomplete", () => {
   const featureDir = fs.mkdtempSync(path.join(os.tmpdir(), "engineering-incomplete-evidence-"));
   write(path.join(featureDir, "implementation-evidence.md"), "# Implementation Evidence — referral-home\n");

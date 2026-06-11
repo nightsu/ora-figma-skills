@@ -1,16 +1,42 @@
 # Cross-Product Conflict 检测细节
 
-本文档补充 `SKILL.md` 中的冲突检测规则,重点说明 4 种 conflict 的检测算法、
+本文档补充 `SKILL.md` 中的冲突检测规则,重点说明 conflict 的检测算法、
 `label_drift` 的自动校正机制、`[deferred]` 的识别。
 
-## 4 种 conflict 类型一览
+## conflict 类型一览
 
 | 类型 | 检测对象 | 检测方式 | 处理 |
 |---|---|---|---|
 | `field_unbound` | api-mapping 字段 | api-mapping 字段名是否在 component-mapping 中出现 | 写入 open-questions |
 | `module_missing_token` | component-mapping module | component-mapping module 名是否在 design-token-patch 中出现 | 写入 open-questions |
+| `structured_token_gap` | 结构化布局 module | component-mapping / design-token-patch 显示该 module 是表格、列表、网格、卡片组、表单或工具栏,但 design-token-patch 缺少列宽/项宽/行高/槽位尺寸等可实现核对的子项 token | 写入 open-questions;implementation-evidence 标 `incomplete` |
 | `module_drift` | ui-understanding module | ui-understanding module 名是否在 component-mapping 中出现 | 写入 open-questions |
 | `label_drift` | component-mapping 槽位 label | component-mapping 槽位 label 是否等于 design-token-patch 同槽 label | **自动以 D 为准,不写入 open-questions** |
+
+## `structured_token_gap` 检测规则
+
+该冲突覆盖所有结构化布局,不针对某个业务字段或某一列。只要实现阶段需要根据 Figma 核对内部布局,就不能只依赖容器级 token 或截图。
+
+触发信号包括但不限于:
+
+- `component-mapping.md` 或 `design-token-patch.md` 出现 `table`、`grid`、`list`、`row`、`column`、`cell`、`repeat_group`、`list_item_*`、`*_header`、`*_cell`、`*_column`
+- module 语义为表格 / 数据网格 / 列表 / 重复行 / 网格 / 卡片组 / 菜单组 / 表单 / 工具栏
+- token 表只记录 `container.width`、`table.width`、`grid.width`、`list.width`、`padding`、`gap` 等外层值,但缺少可见子项尺寸
+
+最低判断:
+
+- 表格 / 数据网格:至少有总宽、每个可见列的列宽或列比例、行高、cell padding
+- 列表 / 重复行:至少有容器宽、重复项宽高或 min-height、项间距、关键文本/图标槽位宽高
+- 网格 / 卡片组:至少有容器宽、列数、item 宽高、row/column gap、关键槽位宽高
+- 表单 / 工具栏:至少有容器宽、控件宽高、label/value 区域宽度、gap
+
+输出到 `open-questions.md` 时使用稳定结构角色,不要用样本文案命名冲突。例如:
+
+```markdown
+- [ ] structured_token_gap: StudentDetails.nested.column.content.width 未从 design-token-patch.md 中抽出,实现前需补充列宽 token 或由设计确认。
+```
+
+若该问题未解决,`implementation-evidence.md` 不应被标为质量通过的 generated gate;handoff 前必须保持 `incomplete`,除非用户显式 skip 并写入 audit。
 
 ## `label_drift` 自动校正算法
 

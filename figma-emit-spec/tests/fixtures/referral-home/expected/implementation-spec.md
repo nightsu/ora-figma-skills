@@ -78,6 +78,8 @@ ReferralHomePage
 
 **Design Tokens**
 - columnCount: 4 (INFERRED from 4-instance grid)
+- itemWidth: 78px
+- itemHeight: 56px
 - itemGap: 8px
 - iconSize: 32px
 - labelFontSize: 12px

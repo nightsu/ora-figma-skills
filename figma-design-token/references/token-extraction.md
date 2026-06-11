@@ -38,6 +38,37 @@ Figma 中字体的 `style` 字段在不同字族下命名不一致,常见陷阱:
 - `INFERRED (gap between siblings)`
 - `INFERRED (min height across 3 list items)`
 
+## 结构化布局覆盖规则
+
+表格、列表、网格、卡片组、菜单组等结构化布局不能只抽容器级 token。只记录 `table.width`、`grid.width` 或 `list.width` 会让实现阶段无法核对列宽、项宽和槽位宽度,属于不完整 token。
+
+**最低覆盖要求:**
+
+| 布局类型 | 必须抽取 | 缺失时处理 |
+|---|---|---|
+| 表格 / 数据网格 | `table.width`, 每个可见列的 `column.<role>.width` 或 `column.<role>.ratio`, `row.height`, `cell.padding` | 写入 Open Questions,说明缺哪个列/槽位尺寸 |
+| 列表 / 重复行 | `list.width`, `item.width`, `item.height` 或 `item.minHeight`, `item.gap`, 关键文本/图标槽位宽高 | 写入 Open Questions,说明缺哪个重复项或槽位尺寸 |
+| 网格 / 卡片组 | `grid.width`, `columnCount`, `item.width`, `item.height`, `rowGap`, `columnGap`, 关键槽位宽高 | 写入 Open Questions;若从实例数量或 sibling 间距推断,标 `INFERRED` |
+| 表单 / 工具栏 | `container.width`, 控件宽高, label/value 区域宽度, gap | 写入 Open Questions,说明无法核对的控件尺寸 |
+
+**命名建议:** 使用稳定语义角色,不要用样本文案命名 token。示例:
+
+```markdown
+| nested.table.width | 942px | direct |
+| nested.column.student.width | 180px | direct |
+| nested.column.product.width | 220px | direct |
+| grid.item.width | 78px | direct |
+| grid.item.height | 64px | direct |
+```
+
+**缺失不能静默通过:** 如果 Figma evidence 或 MCP 返回值无法提供 `absoluteBoundingBox` / auto-layout sizing 信息,仍要在 `## Open Questions` 记录,例如:
+
+```markdown
+- [ ] StudentDetails.nested.column.product.width 未从 Figma evidence 中抽出,实现前需补充列宽 token 或由设计确认。
+```
+
+**不要把截图当 token:** bitmap snapshot 可用于视觉 baseline,不能替代 bounding box / auto-layout token。若只有 `snapshots/default.png` 和截图元数据,必须标记为 token 缺失,不能声称尺寸已对齐。
+
 ## Variables 段的填充
 
 `## Variables` 段汇总所有被关联的 Figma variables。每条记录:
@@ -84,6 +115,7 @@ Figma 中字体的 `style` 字段在不同字族下命名不一致,常见陷阱:
 - module 名**原样**复制,不做改写
 - module 名顺序与 `component-mapping.md` 保持一致
 - 若 component-mapping 有但本产物找不到对应节点,**仍要列出该 module**,表格留空 + self-check 警告
+- 若 component-mapping 中同一 module 存在 `repeat_group`、`list_item_*`、`*_header` / `*_cell`、`*_column`、`row`、`table`、`grid` 等结构化布局信号,design-token 必须覆盖对应子项尺寸;缺失时写 Open Questions
 
 ## 不要做的事
 

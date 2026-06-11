@@ -11,7 +11,7 @@
 和 `expected/` 对比,确认**关键行为**:
 - `label_drift` 自动校正(C2 槽位 label 被 D 真实 label 覆盖)
 - `[deferred]` 标记在 spec 中显式标"本期不实现"
-- 跨产物冲突写入 open-questions(field_unbound / module_missing_token / module_drift)
+- 跨产物冲突写入 open-questions(field_unbound / module_missing_token / structured_token_gap / module_drift)
 - 6 phase 分段汇总 open questions
 - `implementation-evidence.md` 作为 coding 前证据门禁,要求后续实现读取 UI structure、module-level token、behavior/API 和 snapshot evidence
 

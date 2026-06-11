@@ -51,6 +51,7 @@ figma-design-token feature=<feature-name>
 
 本 skill **只补充精确视觉信息**:
 - 模块尺寸、padding、margin、gap
+- 结构化布局的可验证子项尺寸(如表格列宽、列表行高、网格项宽高、重复项内关键槽位宽高)
 - 字体大小、字重、行高
 - 色值、background、border、shadow
 - 圆角、border-radius
@@ -81,6 +82,7 @@ figma-design-token feature=<feature-name>
 3. **逐 module 抽取 token**
    - 对 `component-mapping.md` 的每个 `### <ModuleName>` 子节,
      在 Figma 节点中定位对应子树,抽取视觉 token
+   - 若 module 是表格、列表、网格、卡片组等结构化布局,必须抽取容器尺寸和可验证的子项尺寸;不能只记录容器宽高后跳过列宽、项宽、行高或槽位宽度
    - 字体名陷阱:`Inter` 字重写 `"Semi Bold"`(有空格),不是 `"SemiBold"`,同理 `"Extra Bold"`
    - 详见 `references/token-extraction.md`
 
@@ -138,7 +140,7 @@ figma-design-token feature=<feature-name>
 | ... | ... | ... | ... |
 
 ## Open Questions
-如存在变量缺失、资源导出格式或推断 token 需要确认,用 `- [ ]` 记录在这里;没有则写 `(无)`。
+如存在变量缺失、资源导出格式、推断 token 或结构化布局子项尺寸缺失需要确认,用 `- [ ]` 记录在这里;没有则写 `(无)`。
 
 ## Ignored
 - StatusBar / HomeIndicator / 装饰背景(已在 component-mapping 阶段过滤)
@@ -159,6 +161,7 @@ figma-design-token feature=<feature-name>
 3. 抽取 Figma variables 时,关联到使用它的模块
 4. assets 只输出引用,**不下载**
 5. 字体名陷阱:`Inter` 字重 `"Semi Bold"` / `"Extra Bold"`(有空格)
+6. 结构化布局 token 必须能支撑实现核对;表格至少覆盖总宽、列宽/列比例、行高和 cell padding,列表/网格至少覆盖容器宽、重复项宽高、gap 和关键槽位尺寸
 
 ## 自查规则
 
@@ -168,6 +171,7 @@ skill 在产物落盘后,应输出以下自查信息供 orchestrator 的 review 
 |---|---|---|
 | `Source: INFERRED` token 数 | > 0 | "N 个 token 标记为 INFERRED,建议人工核对" |
 | `component-mapping.md` 出现但本产物未抽 token 的 module 数 | > 0 | "N 个 module 在 component-mapping 出现但本产物缺 token: [...]" |
+| 结构化布局缺少子项尺寸 token 数 | > 0 | "N 个结构化布局缺少列宽/项宽/行高/槽位尺寸 token,必须进入 Open Questions" |
 | Figma variable 数 | > 0 | ℹ "N 个 Figma variable 被关联"(仅信息) |
 
 自查**不阻塞**产物落盘,只是提示。
