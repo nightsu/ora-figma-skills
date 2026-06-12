@@ -95,7 +95,7 @@ After pulling repository updates, run the same script again:
 If you use standalone skills only, run:
 
 ```bash
-./scripts/install.sh update
+./scripts/install.sh skills
 ```
 
 `update` refreshes the default mixed install:

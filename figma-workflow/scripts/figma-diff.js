@@ -380,6 +380,11 @@ function readSnapshot(snapshotDir) {
 
 function inferFeatureFromSnapshotDir(snapshotDir) {
   const parts = path.resolve(snapshotDir).split(path.sep);
+  const fixturesIndex = parts.lastIndexOf("fixtures");
+  if (fixturesIndex >= 0 && parts[fixturesIndex + 1]) {
+    return parts[fixturesIndex + 1];
+  }
+
   const cacheIndex = parts.lastIndexOf(".figma-cache");
   if (cacheIndex > 0) {
     return parts[cacheIndex - 1];
@@ -387,7 +392,7 @@ function inferFeatureFromSnapshotDir(snapshotDir) {
   return "unknown-feature";
 }
 
-function buildDiffFromSnapshots(beforeDir, afterDir) {
+function buildDiffFromSnapshots(beforeDir, afterDir, options = {}) {
   const before = readSnapshot(beforeDir);
   const after = readSnapshot(afterDir);
 
@@ -400,7 +405,7 @@ function buildDiffFromSnapshots(beforeDir, afterDir) {
   const layoutChanges = diffLayout(before.metadata, after.metadata);
   const tokenChanges = diffTokens(before.context, after.context);
   const result = {
-    feature: inferFeatureFromSnapshotDir(afterDir),
+    feature: options.feature || inferFeatureFromSnapshotDir(afterDir),
     fileKey: after.metadata.file_key,
     nodeId: after.metadata.node_id,
     generatedAt: after.metadata.captured_at || after.context.captured_at || "2026-05-21T11:20:00+08:00",
@@ -432,13 +437,16 @@ function buildDiffFromSnapshots(beforeDir, afterDir) {
 }
 
 function runCli(argv) {
-  const [beforeDir, afterDir] = argv;
+  const featureArg = argv.find((arg) => arg.startsWith("--feature="));
+  const feature = featureArg ? featureArg.slice("--feature=".length) : "";
+  const positional = argv.filter((arg) => !arg.startsWith("--feature="));
+  const [beforeDir, afterDir] = positional;
   if (!beforeDir || !afterDir) {
-    process.stderr.write("Usage: node figma-workflow/scripts/figma-diff.js <baselineSnapshotDir> <currentSnapshotDir>\n");
+    process.stderr.write("Usage: node figma-workflow/scripts/figma-diff.js [--feature=<feature>] <baselineSnapshotDir> <currentSnapshotDir>\n");
     return 1;
   }
 
-  const diff = buildDiffFromSnapshots(beforeDir, afterDir);
+  const diff = buildDiffFromSnapshots(beforeDir, afterDir, { feature });
   process.stdout.write(renderDesignDiffMarkdown(diff));
   return 0;
 }

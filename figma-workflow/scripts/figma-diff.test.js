@@ -132,3 +132,19 @@ test("builds diff with feature name inferred from docs design path", () => {
   assert.equal(result.feature, "real-feature");
   assert.match(diff.renderDesignDiffMarkdown(result), /^# Design Diff — real-feature/);
 });
+
+test("builds diff with feature name inferred from skill fixture path", () => {
+  const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), "figma-diff-fixture-feature-"));
+  const baselineDir = path.join(rootDir, "figma-design-diff/tests/fixtures/sales-workbench/inputs/.figma-cache/snapshots/baseline");
+  const currentDir = path.join(rootDir, "figma-design-diff/tests/fixtures/sales-workbench/inputs/.figma-cache/snapshots/current");
+  fs.mkdirSync(baselineDir, { recursive: true });
+  fs.mkdirSync(currentDir, { recursive: true });
+
+  fs.writeFileSync(path.join(baselineDir, "metadata.file.1-2.json"), JSON.stringify(beforeMetadata));
+  fs.writeFileSync(path.join(currentDir, "metadata.file.1-2.json"), JSON.stringify(afterMetadata));
+
+  const result = diff.buildDiffFromSnapshots(baselineDir, currentDir);
+
+  assert.equal(result.feature, "sales-workbench");
+  assert.match(diff.renderDesignDiffMarkdown(result), /^# Design Diff — sales-workbench/);
+});

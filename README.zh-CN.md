@@ -95,7 +95,7 @@ flowchart LR
 如果使用 standalone skills 模式：
 
 ```bash
-./scripts/install.sh update
+./scripts/install.sh skills
 ```
 
 `update` 会刷新默认混合模式：

@@ -18,7 +18,7 @@
 
 ```bash
 node --test figma-workflow/scripts/figma-diff.test.js
-node figma-workflow/scripts/figma-diff.js \
+node figma-workflow/scripts/figma-diff.js --feature=sales-workbench \
   figma-design-diff/tests/fixtures/sales-workbench/inputs/.figma-cache/snapshots/baseline \
   figma-design-diff/tests/fixtures/sales-workbench/inputs/.figma-cache/snapshots/current
 ```

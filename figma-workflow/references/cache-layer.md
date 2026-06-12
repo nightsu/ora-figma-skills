@@ -9,8 +9,15 @@ docs/design/<feature>/.figma-cache/
 ├── manifest.json
 ├── metadata.<file-key>.<node-id-safe>.json
 ├── design-context.<file-key>.<node-id-safe>.json
-└── screenshots/
-    └── screenshot.<file-key>.<node-id-safe>.json
+├── screenshots/
+│   └── screenshot.<file-key>.<node-id-safe>.json
+└── snapshots/
+    ├── baseline/
+    │   ├── metadata.<file-key>.<node-id-safe>.json
+    │   └── design-context.<file-key>.<node-id-safe>.json
+    └── current/
+        ├── metadata.<file-key>.<node-id-safe>.json
+        └── design-context.<file-key>.<node-id-safe>.json
 ```
 
 `node-id-safe` 把 `:` 转成 `-`。
@@ -72,6 +79,7 @@ docs/design/<feature>/.figma-cache/
 - `invalid` entry 必须被忽略,不能把损坏或缺失的 evidence 写入下游 `.md`。
 - raw Figma JSON 只能留在 `.figma-cache/` 内;`ui-understanding.md`、`component-mapping.md`、`design-token-patch.md` 和 `implementation-spec.md` 只写归纳后的事实。
 - cache 命中只减少重复读取,不代表 phase 完成,也不能跳过 review gate。
+- `snapshots/<snapshot-id>/` 用于 P13 `figma-design-diff` 的 before/current evidence。snapshot id 推荐使用 `baseline`、`current` 或带时间语义的稳定名称;它保存对比所需的 metadata/design-context 副本,不替代 manifest 中的 current cache entry。
 
 ## Phase Integration
 

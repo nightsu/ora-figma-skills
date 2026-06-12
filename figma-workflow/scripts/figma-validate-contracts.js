@@ -44,6 +44,37 @@ function aggregateStatus(rows) {
   return "pass";
 }
 
+function markdownTableRows(markdown, sectionTitle) {
+  const section = markdownSection(markdown, sectionTitle);
+  if (!section.trim()) return [];
+
+  return section
+    .split(/\r?\n/)
+    .filter((line) => /^\s*\|/.test(line))
+    .filter((line) => !/^\s*\|\s*-+/.test(line))
+    .map((line) => line.trim().replace(/^\||\|$/g, "").split("|").map((cell) => cell.trim()));
+}
+
+function tableObjects(markdown, sectionTitle) {
+  const rows = markdownTableRows(markdown, sectionTitle);
+  if (rows.length < 2) return [];
+
+  const headers = rows[0];
+  return rows.slice(1).map((row) => Object.fromEntries(headers.map((header, index) => [header, row[index] || ""])));
+}
+
+function markdownSection(text, heading) {
+  const escaped = heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const headingPattern = new RegExp(`^##\\s+${escaped}\\s*$`, "im");
+  const match = headingPattern.exec(text);
+  if (!match) return "";
+
+  const start = match.index + match[0].length;
+  const rest = text.slice(start);
+  const nextHeading = /^##\s+/m.exec(rest);
+  return nextHeading ? rest.slice(0, nextHeading.index) : rest;
+}
+
 function checkMarkdownContracts(featureDir) {
   const rows = [];
 
@@ -110,6 +141,24 @@ function checkFixtureContracts(repoRoot) {
   return { status: aggregateStatus(rows), rows };
 }
 
+function isRawFigmaJsonProhibition(line) {
+  return /(do not|don't|cannot|must not|never|excludes?|禁止|不要|不得|不直接|不引用|不能|只能留在|不把|不应)/i.test(line);
+}
+
+function rawFigmaJsonViolationLines(markdown) {
+  const lines = markdown.split(/\r?\n/);
+  const phraseViolations = lines.filter((line) => /raw Figma JSON/i.test(line) && !isRawFigmaJsonProhibition(line));
+  const rawPayloadPatterns = [
+    /"absoluteBoundingBox"\s*:/,
+    /"boundVariables"\s*:/,
+    /"children"\s*:\s*\[/,
+    /"fills"\s*:\s*\[/,
+    /"strokes"\s*:\s*\[/,
+  ];
+  const payloadViolations = lines.filter((line) => rawPayloadPatterns.some((pattern) => pattern.test(line)));
+  return [...new Set([...phraseViolations, ...payloadViolations])];
+}
+
 function gitChangedFiles(repoRoot, baseRef) {
   try {
     const output = execFileSync("git", ["diff", "--name-only", `${baseRef}...HEAD`], {
@@ -137,7 +186,7 @@ function checkBoundary(repoRoot, baseRef, options = {}) {
   const implementationSpecs = walkDirs(path.join(repoRoot, "docs", "design"))
     .filter((dir) => exists(path.join(dir, "implementation-spec.md")))
     .map((dir) => path.join(dir, "implementation-spec.md"));
-  const rawJsonFiles = implementationSpecs.filter((filePath) => /raw Figma JSON/i.test(readText(filePath)));
+  const rawJsonFiles = implementationSpecs.filter((filePath) => rawFigmaJsonViolationLines(readText(filePath)).length > 0);
 
   rows.push({
     rule: "implementation spec excludes raw Figma JSON",
@@ -154,6 +203,96 @@ function checkBoundary(repoRoot, baseRef, options = {}) {
   });
 
   return { status: aggregateStatus(rows), rows };
+}
+
+function checkSpecSnapshotConsistency(featureDir) {
+  const specPath = path.join(featureDir, "implementation-spec.md");
+  const manifestPath = path.join(featureDir, "assets-manifest.md");
+  const rows = [];
+
+  if (!exists(manifestPath)) {
+    rows.push({
+      baselineId: "-",
+      check: "assets_manifest_exists",
+      status: "warn",
+      notes: "assets-manifest.md missing; run figma-assets-validate before relying on visual baselines",
+    });
+    return { status: aggregateStatus(rows), rows };
+  }
+
+  const manifest = readText(manifestPath);
+  const spec = readText(specPath);
+  const baselines = tableObjects(manifest, "Visual Baselines");
+  const requiredBaselines = baselines.filter((row) => /^yes$/i.test(row.Required));
+
+  if (requiredBaselines.length === 0) {
+    rows.push({
+      baselineId: "-",
+      check: "required_baseline_declared",
+      status: "warn",
+      notes: "no Required=yes visual baseline listed in assets-manifest.md",
+    });
+    return { status: aggregateStatus(rows), rows };
+  }
+
+  for (const baseline of requiredBaselines) {
+    const baselineId = baseline["Baseline ID"] || "unknown";
+    const imagePath = baseline["Image Path"] || "";
+    const metadataPath = baseline["Metadata Path"] || "";
+    const imageExists = imagePath && exists(path.join(featureDir, imagePath));
+    const metadataExists = metadataPath && exists(path.join(featureDir, metadataPath));
+
+    rows.push({
+      baselineId,
+      check: "snapshot_exists",
+      status: imageExists && metadataExists ? "pass" : "fail",
+      notes: imageExists && metadataExists
+        ? `${imagePath} and ${metadataPath} exist`
+        : `missing ${[imageExists ? "" : imagePath || "image path", metadataExists ? "" : metadataPath || "metadata path"].filter(Boolean).join(", ")}`,
+    });
+
+    let metadata = null;
+    if (metadataExists) {
+      try {
+        metadata = JSON.parse(readText(path.join(featureDir, metadataPath)));
+      } catch {
+        metadata = null;
+      }
+    }
+
+    const hasDimensions = Boolean(metadata && metadata.original_width && metadata.original_height);
+    rows.push({
+      baselineId,
+      check: "dimension_recorded",
+      status: hasDimensions ? "pass" : "fail",
+      notes: hasDimensions ? "original_width and original_height are recorded" : "snapshot metadata missing original_width/original_height",
+    });
+
+    const specMentionsBaseline = Boolean(spec && spec.includes(baselineId) && (!imagePath || spec.includes(imagePath)));
+    rows.push({
+      baselineId,
+      check: "spec_mentions_baseline",
+      status: specMentionsBaseline ? "pass" : "fail",
+      notes: specMentionsBaseline ? "implementation-spec.md lists the required baseline" : "implementation-spec.md does not list this required baseline",
+    });
+  }
+
+  return { status: aggregateStatus(rows), rows };
+}
+
+function defaultSpecSnapshotReview(result) {
+  const hasFailure = result.rows.some((row) => row.status === "fail");
+  return {
+    status: hasFailure ? "warn" : "pass",
+    rows: [
+      {
+        iteration: 0,
+        finding: hasFailure ? "Required baseline mismatch remains" : "No required baseline mismatch",
+        action: hasFailure ? "Needs P15/spec follow-up" : "No auto-fix needed",
+        result: hasFailure ? "warn" : "pass",
+      },
+    ],
+  };
 }
 
 function defaultAssetManifestCheck() {
@@ -184,6 +323,7 @@ function renderValidationReport(result) {
     `| fixture contract | ${result.fixtures.status} |  |`,
     `| boundary check | ${result.boundary.status} |  |`,
     `| asset manifest | ${result.assetManifest.status} |  |`,
+    `| spec snapshot consistency | ${result.specSnapshot.status} |  |`,
     `| optional llm judge | ${result.llmJudge.status} | LLM-as-judge skipped |`,
     "",
   ];
@@ -210,6 +350,18 @@ function renderValidationReport(result) {
     row.status,
     row.notes,
   ]);
+  appendMarkdownRows(lines, "Spec-Snapshot Consistency Check", ["Baseline ID", "Check", "Status", "Notes"], result.specSnapshot.rows, (row) => [
+    row.baselineId,
+    row.check,
+    row.status,
+    row.notes,
+  ]);
+  appendMarkdownRows(lines, "Spec-Snapshot Review Iterations", ["Iteration", "Finding", "Action", "Result"], result.specSnapshotReview.rows, (row) => [
+    row.iteration,
+    row.finding,
+    row.action,
+    row.result,
+  ]);
   appendMarkdownRows(lines, "Optional LLM Judge", ["Target", "Status", "Notes"], result.llmJudge.rows, (row) => [
     row.target,
     row.status,
@@ -226,7 +378,7 @@ function appendMarkdownRows(lines, title, headers, rows, mapRow, fallbackRows = 
   lines.push(`| ${headers.map(() => "---").join(" | ")} |`);
   const values = rows.length > 0 ? rows.map(mapRow) : fallbackRows;
   for (const row of values) {
-    lines.push(`| ${row.map((cell) => String(cell || "").replace(/\|/g, "\\|")).join(" | ")} |`);
+    lines.push(`| ${row.map((cell) => String(cell ?? "").replace(/\|/g, "\\|")).join(" | ")} |`);
   }
   lines.push("");
 }
@@ -249,8 +401,10 @@ function runCli(argv) {
     fixtures: checkFixtureContracts(repoRoot),
     boundary: checkBoundary(repoRoot, baseRef),
     assetManifest: defaultAssetManifestCheck(),
+    specSnapshot: checkSpecSnapshotConsistency(featureDir),
     llmJudge: { status: "skipped", rows: [] },
   };
+  result.specSnapshotReview = defaultSpecSnapshotReview(result.specSnapshot);
   process.stdout.write(renderValidationReport(result));
   return 0;
 }
@@ -259,7 +413,9 @@ module.exports = {
   checkBoundary,
   checkFixtureContracts,
   checkMarkdownContracts,
+  checkSpecSnapshotConsistency,
   hasSections,
+  rawFigmaJsonViolationLines,
   readText,
   renderValidationReport,
 };

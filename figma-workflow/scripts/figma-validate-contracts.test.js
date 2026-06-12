@@ -8,6 +8,7 @@ const {
   checkBoundary,
   checkFixtureContracts,
   checkMarkdownContracts,
+  checkSpecSnapshotConsistency,
   hasSections,
   renderValidationReport,
 } = require("./figma-validate-contracts.js");
@@ -122,6 +123,71 @@ test("checkBoundary warns on business code diffs and raw Figma JSON", () => {
   assert.match(result.rows.map((row) => row.notes).join("\n"), /raw Figma JSON/);
 });
 
+test("checkBoundary allows explicit raw Figma JSON prohibition text", () => {
+  const repoRoot = fs.mkdtempSync(path.join(os.tmpdir(), "figma-boundary-negative-"));
+  write(
+    path.join(repoRoot, "docs/design/referral-home/implementation-spec.md"),
+    [
+      "# Implementation Spec",
+      "",
+      "> Source of truth for Agent apply stage. DO NOT consume raw Figma JSON in apply.",
+      "",
+      "## Coding Boundary",
+      "",
+      "- 实施 agent 不直接读取 raw Figma JSON",
+    ].join("\n"),
+  );
+
+  const result = checkBoundary(repoRoot, "base", {
+    changedFiles: ["figma-workflow/SKILL.md"],
+  });
+
+  const rawJsonRow = result.rows.find((row) => row.rule === "implementation spec excludes raw Figma JSON");
+  assert.equal(rawJsonRow.status, "pass");
+});
+
+test("checkSpecSnapshotConsistency reports required visual baseline checks", () => {
+  const featureDir = fs.mkdtempSync(path.join(os.tmpdir(), "figma-spec-snapshot-"));
+  write(
+    path.join(featureDir, "implementation-spec.md"),
+    [
+      "# Implementation Spec — sales-workbench",
+      "",
+      "## Visual Baselines",
+      "",
+      "| Baseline ID | Image Path | Figma Node | Purpose | Required |",
+      "|---|---|---|---|---|",
+      "| default | snapshots/default.png | 123075:3394 | implementation_visual_baseline | yes |",
+    ].join("\n"),
+  );
+  write(
+    path.join(featureDir, "assets-manifest.md"),
+    [
+      "# Assets Manifest — sales-workbench",
+      "",
+      "## Visual Baselines",
+      "",
+      "| Baseline ID | Figma Node | Image Path | Metadata Path | Required | Purpose | Status | Notes |",
+      "|---|---|---|---|---|---|---|---|",
+      "| default | 123075:3394 | snapshots/default.png | snapshots/default.json | yes | implementation_visual_baseline | downloaded | Main dashboard |",
+    ].join("\n"),
+  );
+  write(path.join(featureDir, "snapshots/default.png"), "fake png");
+  write(
+    path.join(featureDir, "snapshots/default.json"),
+    JSON.stringify({ original_width: 1440, original_height: 900 }),
+  );
+
+  const result = checkSpecSnapshotConsistency(featureDir);
+
+  assert.equal(result.status, "pass");
+  assert.deepEqual(result.rows.map((row) => row.check), [
+    "snapshot_exists",
+    "dimension_recorded",
+    "spec_mentions_baseline",
+  ]);
+});
+
 test("renderValidationReport includes all report sections", () => {
   const report = renderValidationReport({
     feature: "sales-workbench",
@@ -129,6 +195,8 @@ test("renderValidationReport includes all report sections", () => {
     fixtures: { status: "pass", rows: [] },
     boundary: { status: "pass", rows: [] },
     assetManifest: { status: "warn", rows: [{ rule: "blocking asset", status: "warn", notes: "missing destination" }] },
+    specSnapshot: { status: "pass", rows: [{ baselineId: "default", check: "snapshot_exists", status: "pass", notes: "ok" }] },
+    specSnapshotReview: { status: "pass", rows: [{ iteration: 0, finding: "No required baseline mismatch", action: "No auto-fix needed", result: "pass" }] },
     llmJudge: { status: "skipped", rows: [] },
   });
 
@@ -137,5 +205,8 @@ test("renderValidationReport includes all report sections", () => {
   assert.match(report, /## Fixture Contract Check/);
   assert.match(report, /## Boundary Check/);
   assert.match(report, /## Asset Manifest Check/);
+  assert.match(report, /## Spec-Snapshot Consistency Check/);
+  assert.match(report, /## Spec-Snapshot Review Iterations/);
+  assert.match(report, /\| 0 \| No required baseline mismatch \| No auto-fix needed \| pass \|/);
   assert.match(report, /## Optional LLM Judge/);
 });
