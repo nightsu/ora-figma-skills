@@ -57,6 +57,13 @@ Phase E review gate 通过后,进入交接前工程化检查:
 - `figma-emit-spec` → `implementation-evidence.md` quality gate
 - `figma-assets-validate` → `assets-manifest.md` + `validation-report.md`
 
+## Best-case example
+
+- Golden path 说明:[../docs/examples/figma-workflow-best-case/README.md](../docs/examples/figma-workflow-best-case/README.md)
+- Fixture 覆盖矩阵:[../docs/examples/figma-workflow-best-case/fixture-coverage.md](../docs/examples/figma-workflow-best-case/fixture-coverage.md)
+
+该入口把 A-E phase 和交接前工程化检查的 expected output 串在一起,用于判断每个阶段是否有最佳案例参考,以及是否已经形成同一 feature 的端到端链路。
+
 ## 交接前检查与 Handoff
 
 phase E review gate 通过后,先进入交接前工程化检查。检查项处理完成后,再进入 handoff 出口:

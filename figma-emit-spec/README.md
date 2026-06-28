@@ -51,6 +51,7 @@ handoff 前的 workflow 会检查 `implementation-evidence.md` 的质量。缺�
 - 冲突检测算法 + label_drift 自动校正:[references/conflict-detection.md](./references/conflict-detection.md)
 - spec 模板填充规则:[references/spec-template.md](./references/spec-template.md)
 - 端到端 fixture:[tests/fixtures/referral-home/](./tests/fixtures/referral-home/)
+- Best-case 入口:[../docs/examples/figma-workflow-best-case/README.md](../docs/examples/figma-workflow-best-case/README.md)
 
 ## 上下游
 

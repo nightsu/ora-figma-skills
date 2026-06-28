@@ -30,6 +30,7 @@ figma-ui-understand feature=<feature-name>
 - Skill 使用说明:[SKILL.md](./SKILL.md)
 - 产物模板:[references/ui-understanding-template.md](./references/ui-understanding-template.md)
 - 验证 fixture:[tests/fixtures/sales-workbench/](./tests/fixtures/sales-workbench/)
+- Best-case 入口:[../docs/examples/figma-workflow-best-case/README.md](../docs/examples/figma-workflow-best-case/README.md)
 
 ## 上下游
 

@@ -40,6 +40,13 @@ flowchart LR
 
 主链路保持 7 个 skill：`figma-workflow` + Phase A-E 的 6 个阶段 skill。工程化能力按需使用，不改变 Phase A-E 的 coding boundary。
 
+## 最佳案例入口
+
+- 统一 golden path 说明：[docs/examples/figma-workflow-best-case/README.md](./docs/examples/figma-workflow-best-case/README.md)
+- fixture 覆盖矩阵：[docs/examples/figma-workflow-best-case/fixture-coverage.md](./docs/examples/figma-workflow-best-case/fixture-coverage.md)
+
+当前每个主 phase 都有可 review 的 expected output；覆盖矩阵会明确标出它们是否来自同一个 feature 链路，以及后续如果要补单一 feature A-E golden path 应优先补哪些 fixture。
+
 ## 技能列表
 
 ### 主链路技能

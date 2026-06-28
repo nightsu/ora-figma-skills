@@ -33,6 +33,7 @@ figma-design-token feature=<feature-name>
 - Skill 使用说明:[SKILL.md](./SKILL.md)
 - Token 抽取细节(陷阱、INFERRED 判定):[references/token-extraction.md](./references/token-extraction.md)
 - 端到端 fixture:[tests/fixtures/referral-home/](./tests/fixtures/referral-home/)
+- Best-case 入口:[../docs/examples/figma-workflow-best-case/README.md](../docs/examples/figma-workflow-best-case/README.md)
 
 ## 上下游
 

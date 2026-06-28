@@ -40,6 +40,13 @@ flowchart LR
 
 The main workflow keeps seven skills in the critical path: `figma-workflow` plus the six Phase A-E skills. Engineering skills are used as needed and do not change the Phase A-E coding boundary.
 
+## Best-Case Example
+
+- Golden path guide: [docs/examples/figma-workflow-best-case/README.md](./docs/examples/figma-workflow-best-case/README.md)
+- Fixture coverage matrix: [docs/examples/figma-workflow-best-case/fixture-coverage.md](./docs/examples/figma-workflow-best-case/fixture-coverage.md)
+
+Every main phase now has a reviewable expected output. The coverage matrix calls out whether those outputs belong to the same feature chain and which fixtures should be added next for a single-feature A-E golden path.
+
 ## Skills
 
 ### Main Workflow

@@ -31,16 +31,14 @@
 - `inputs/component-mapping.md` — phase C2 模拟产物(故意含 label_drift)
 - `inputs/design-token-patch.md` — phase D 模拟产物(直接复用 P2 fixture)
 - `expected/implementation-spec.md` — 期望 planning/spec authoring 主产物
-- `expected/open-questions.md` — 期望 open-questions 汇总
-
-待补齐:
-
 - `expected/implementation-evidence.md` — 期望 coding evidence gate 产物
+- `expected/open-questions.md` — 期望 open-questions 汇总
 
 ## 验证方式
 
 人工 review。Agent 跑完后,用 `diff` 对比产物 vs expected:
 - 关键看 Auto Corrections Metadata 段 + Module 段的 Deferred 标记
+- 关键看 implementation-evidence 的 Required Files、module-level token evidence、Snapshot evidence 和 Coding Gate Checklist
 - 关键看 open-questions 的分段结构 + Deferred 段
 - 允许格式略有浮动(空行 / 列序),不允许语义偏离
 

@@ -28,3 +28,8 @@ figma-api-first feature=<feature-name>
 ```
 
 调用后粘贴 TypeScript type、JSON response、字段清单或接口说明文本。
+
+## 最佳案例
+
+- 本 skill fixture:[tests/fixtures/sales-workbench/](./tests/fixtures/sales-workbench/)
+- Suite best-case 入口:[../docs/examples/figma-workflow-best-case/README.md](../docs/examples/figma-workflow-best-case/README.md)

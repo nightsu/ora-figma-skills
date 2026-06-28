@@ -36,6 +36,7 @@ figma-ui-api-mapper feature=<feature-name>
 - Skill 使用说明:[SKILL.md](./SKILL.md)
 - 节点分类细节:[references/classification-and-mapping.md](./references/classification-and-mapping.md)
 - 端到端 fixture:[tests/fixtures/course-list/](./tests/fixtures/course-list/)
+- Best-case 入口:[../docs/examples/figma-workflow-best-case/README.md](../docs/examples/figma-workflow-best-case/README.md)
 
 ## 上下游
 
