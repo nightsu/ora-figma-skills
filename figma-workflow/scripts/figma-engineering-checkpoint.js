@@ -226,6 +226,20 @@ function inferEngineeringCheckpoint(featureDir, options = {}) {
     risk: "assets, visual baselines, and spec-snapshot consistency not reviewed before handoff",
   });
 
+  items.push({
+    label: "Implementation verification contract draft",
+    skill: "figma-implementation-verify",
+    product: "verification-contract.draft.json",
+    status: checkpoint === "pre-handoff"
+      ? productStatus(featureDir, "verification-contract.draft.json")
+      : "not_applicable",
+    recommendation: checkpoint === "pre-handoff" ? "required_prompt" : "available",
+    reason: checkpoint === "pre-handoff"
+      ? "planning needs required baseline scenarios before the contract can be sealed for coding"
+      : "available when preparing or checking post-coding visual verification",
+    risk: "planning may omit the sealed post-coding visual completion gate",
+  });
+
   return { checkpoint, featureDir, items: applyAuditedSkips(featureDir, checkpoint, items) };
 }
 

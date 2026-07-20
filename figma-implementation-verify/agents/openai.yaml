@@ -1,0 +1,4 @@
+interface:
+  display_name: "Figma Implementation Verify"
+  short_description: "Verify implemented UI against sealed Figma baselines"
+  default_prompt: "Use $figma-implementation-verify to prepare, seal, run, or check post-coding visual verification for a feature."

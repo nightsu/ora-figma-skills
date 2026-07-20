@@ -71,4 +71,5 @@ Phase E 产出 `implementation-spec.md` 后仍不能默认进入业务代码修�
 2. 处理或审计 `figma-design-diff`, `figma-ui-handoff`, `figma-assets-validate`。
 3. 选择 builtin / `superpowers:writing-plans` / manual / pause handoff。
 4. 用户明确确认 coding 后,下游 coding agent 才能修改业务项目代码。
-5. coding agent 完成前必须填写 `docs/design/<feature>/implementation-verification.md`。
+5. P15 后运行 `figma-implementation-verify prepare`,planning 后由用户批准并 seal。
+6. coding agent 完成前必须运行 `figma-implementation-verify verify` 与 `check`,由验证器机器生成 `implementation-verification.md`。

@@ -43,7 +43,7 @@ figma-emit-spec feature=<feature-name>
 
 handoff 前的 workflow 会检查 `implementation-evidence.md` 的质量。缺少 module-level token evidence、结构化布局子项 token evidence、Snapshot evidence 字段或 Coding Gate Checklist 时,状态为 `incomplete`,除非用户显式 skip 并写入 audit。
 
-下游 coding agent 在声明 coding complete 前必须填写 `docs/design/<feature>/implementation-verification.md`,记录 evidence 读取、token 应用、snapshot / visual baseline validation 和 intentional deviations。
+P15 后由 `figma-implementation-verify prepare` 生成 verification contract draft,planning 后由用户批准并 seal。下游 coding agent 在声明 coding complete 前必须运行 `verify` 与 `check`;`implementation-verification.md` 由验证器机器生成,禁止手填。
 
 ## 详细规约
 

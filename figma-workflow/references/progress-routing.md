@@ -154,6 +154,8 @@ Assets / validation action 不标记任何 Phase 完成,不替代人工 review g
 
 `figma-assets-validate` 在 Phase E review gate 之后始终是 `required_prompt`,用于生成资源清单、visual baselines,并验证 implementation spec 与 required snapshot 是否一致。
 
+P15 后,`figma-implementation-verify prepare` 也是 `required_prompt`,用于生成 planning 所需的 `verification-contract.draft.json`。draft 可以进入 planning,但只有用户批准并 seal 的 `verification-contract.json` 才能进入 coding。
+
 ## Phase A/B skill 菜单
 
 当 next step 是 A 时,展示:
@@ -265,6 +267,7 @@ Core products:
   [S] ui-handoff.md skipped
   [✓] assets-manifest.md
   [✓] validation-report.md
+  [✓] verification-contract.draft.json
 
 Risk notes:
   - ui-handoff.md skipped: design/product follow-up not captured
@@ -304,7 +307,7 @@ Phase E handoff 进入的是 OpenSpec / planning / task breakdown 等准备阶�
 
 `implementation-spec.md` 不是 coding 阶段唯一输入。handoff 前必须有质量通过的 `implementation-evidence.md`,或用户显式 audited skip。`implementation-evidence.md` 缺失或 `incomplete` 都阻塞 handoff,不能静默进入 handoff。
 
-后续实现 agent 必须根据 `implementation-evidence.md` 读取 `ui-understanding.md`、`design-token-patch.md`、`implementation-spec.md` 和 snapshot baseline,并在声明 coding complete 前填写 `docs/design/<feature>/implementation-verification.md`。`docs/design/<feature>/implementation-verification.md` 必须记录 evidence 读取、module-level token 应用、snapshot / visual baseline validation 和 intentional deviations。
+后续实现 agent 必须根据 `implementation-evidence.md` 读取 `ui-understanding.md`、`design-token-patch.md`、`implementation-spec.md` 和 snapshot baseline。planning 补齐 verification contract draft 后,必须由用户批准并 seal,否则不能开始 coding。声明 coding complete 前必须运行 `figma-implementation-verify verify` 与 `check`;`docs/design/<feature>/implementation-verification.md` 由验证器根据真实页面截图、pixel diff、关键视觉断言与 Verification Subject 机器生成,禁止手填。
 
 Token evidence 不能在质量通过的 generated gate 中写 `<missing>`。表格、列表、网格、卡片组、表单/工具栏等结构化布局必须有列宽/项宽/行高/槽位尺寸等子项 token evidence,不能只写容器宽高或以 snapshot 代替 token。Snapshot evidence 字段必须存在;`<missing>` / `<待 P15 回填>` 只允许作为 P15 回填前或 P15 已显式 skip/audit 后的 risk marker,表示 unresolved snapshot evidence 仍是 handoff risk,不能视为完整 visual validation。缺少 module-level token evidence、结构化布局子项 token、Snapshot evidence 字段或缺少 Coding Gate Checklist 时,`implementation-evidence.md` 状态为 `incomplete`,除非用户显式 skip 并 audit。
 

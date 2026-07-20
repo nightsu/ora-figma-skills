@@ -21,6 +21,7 @@
 - `figma-design-diff`:基于 `.figma-cache/` before/current evidence 生成 `design-diff.md`,提示 Figma 改稿影响和建议重跑阶段(P13)。
 - `figma-ui-handoff`:读取已有 figma-workflow 产物,生成 `ui-handoff.md`,帮助设计/产品补齐上游交接信息(P14)。
 - `figma-assets-validate`:读取已有 figma-workflow 产物,生成 `assets-manifest.md` 与 `validation-report.md`,收口资源交付和自动化验证(P15)。
+- `figma-implementation-verify`:基于 required Figma baselines 生成并冻结验证契约,对真实实现页面执行 coding 后视觉验证,机器生成 `implementation-verification.md` 并阻止未验证完成。
 
 ## 统一结构
 

@@ -202,3 +202,7 @@ metadata JSON 只允许包含稳定 handoff 字段:
 | implementation spec missing visual baseline | "`implementation-spec.md` 未列出 required snapshot" |
 | spec snapshot mismatch unresolved | "spec 与 snapshot 存在未解决不一致,需 blocking open question 或 intentional deviation" |
 | raw Figma JSON in snapshot metadata | "snapshot metadata 只能包含稳定 handoff 字段" |
+
+## Next Step
+
+P15 self-check 通过后,运行 `figma-implementation-verify prepare feature=<feature>` 生成 `verification-contract.draft.json`。P15 只提供设计侧 baseline,不捕获实现页面;真实 post-coding comparison 由 `figma-implementation-verify verify` 与 `check` 完成。

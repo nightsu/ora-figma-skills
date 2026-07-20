@@ -25,6 +25,7 @@
 | Design diff | `figma-design-diff` | `sales-workbench` | before/current `.figma-cache` snapshots | `expected/design-diff.md` | yes |
 | UI handoff | `figma-ui-handoff` | `sales-workbench` | upstream phase outputs + design diff | `expected/ui-handoff.md` | yes |
 | Assets validation | `figma-assets-validate` | `sales-workbench` | spec/token/diff/handoff inputs | `expected/assets-manifest.md`, `expected/validation-report.md` | yes |
+| Post-coding visual gate | `figma-implementation-verify` | generated local feature | required baseline + managed implementation page | contract draft/seal, PASS/FAIL/BLOCKED evidence, tamper check | automated prototype/tests |
 
 ## Gaps and Follow-up Options
 
@@ -33,3 +34,4 @@
 | A-E expected outputs use multiple feature themes | Good for unit/regression fixtures, weaker as one walkthrough | Add `sales-workbench` C2 / D / E fixtures |
 | C2 fixture uses `course-list` legacy mapper scenario | Preserves migration behavior but does not continue `sales-workbench` | Keep it as regression fixture; add new `sales-workbench` C2 fixture separately |
 | D/E fixtures use `referral-home` | Good for label drift and token evidence, not same-feature golden path | Keep it as conflict/evidence fixture; add `sales-workbench` token/spec fixture if a single golden path is required |
+| Post-coding gate has synthetic Chromium coverage, not a real business feature | Proves the evidence state model but not production thresholds | Calibrate guardrails on the first real feature before sealing its contract |

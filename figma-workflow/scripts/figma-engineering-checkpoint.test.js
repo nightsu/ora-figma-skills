@@ -59,6 +59,8 @@ test("infers required pre-handoff prompts from feature products", () => {
   assert.equal(state.items.find((item) => item.skill === "figma-design-diff").recommendation, "required_prompt");
   assert.equal(state.items.find((item) => item.skill === "figma-ui-handoff").recommendation, "recommended");
   assert.equal(state.items.find((item) => item.skill === "figma-assets-validate").recommendation, "required_prompt");
+  assert.equal(state.items.find((item) => item.skill === "figma-implementation-verify").status, "missing");
+  assert.equal(state.items.find((item) => item.skill === "figma-implementation-verify").recommendation, "required_prompt");
 });
 
 test("renders checkpoint and allows continue after required prompts are handled", () => {
@@ -101,6 +103,18 @@ test("requires every file in a combined product before marking it generated", ()
   const assets = state.items.find((item) => item.skill === "figma-assets-validate");
 
   assert.equal(assets.status, "missing");
+});
+
+test("marks implementation verification draft generated before planning handoff", () => {
+  const featureDir = fs.mkdtempSync(path.join(os.tmpdir(), "engineering-verification-draft-"));
+  write(path.join(featureDir, "verification-contract.draft.json"), "{\"status\":\"draft\"}\n");
+
+  const state = checkpoint.inferEngineeringCheckpoint(featureDir, { checkpoint: "pre-handoff" });
+  const verification = state.items.find((item) => item.skill === "figma-implementation-verify");
+
+  assert.equal(verification.product, "verification-contract.draft.json");
+  assert.equal(verification.status, "generated");
+  assert.equal(verification.recommendation, "required_prompt");
 });
 
 test("requires implementation evidence gate before handoff", () => {
@@ -234,6 +248,7 @@ test("blocks handoff when implementation evidence is incomplete", () => {
   write(path.join(featureDir, "implementation-evidence.md"), "# Implementation Evidence — referral-home\n");
   write(path.join(featureDir, "assets-manifest.md"), "# Assets\n");
   write(path.join(featureDir, "validation-report.md"), "# Validation\n");
+  write(path.join(featureDir, "verification-contract.draft.json"), "{\"status\":\"draft\"}\n");
 
   const state = checkpoint.inferEngineeringCheckpoint(featureDir, { checkpoint: "pre-handoff" });
   const evidence = state.items.find((item) => item.skill === "figma-emit-spec");
@@ -248,6 +263,7 @@ test("treats audited incomplete implementation evidence skip as handled", () => 
   write(path.join(featureDir, "implementation-evidence.md"), "# Implementation Evidence — referral-home\n");
   write(path.join(featureDir, "assets-manifest.md"), "# Assets\n");
   write(path.join(featureDir, "validation-report.md"), "# Validation\n");
+  write(path.join(featureDir, "verification-contract.draft.json"), "{\"status\":\"draft\"}\n");
 
   const firstState = checkpoint.inferEngineeringCheckpoint(featureDir, { checkpoint: "pre-handoff" });
   const skipped = firstState.items.filter((item) => item.skill === "figma-emit-spec");

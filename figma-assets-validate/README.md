@@ -29,3 +29,5 @@ docs/design/<feature>/
 - 不修改 Figma 文件。
 - 不写业务代码。
 - 如果 `implementation-spec.md` 与 snapshot 不一致,只允许迭代 Phase E/P15 产物。
+
+P15 完成后运行 `figma-implementation-verify prepare`,将 required baselines 转成 planning 使用的 verification contract draft。真实实现页面截图、pixel diff 和 coding completion gate 由 `figma-implementation-verify` 负责。

@@ -33,9 +33,14 @@ flowchart LR
   EvidenceGate --> Gate
   UIHandoff["UI Handoff<br/>ui-handoff.md"] -.-> Gate
   Assets["Assets / Validation<br/>assets-manifest.md<br/>validation-report.md"] -.-> Gate
+  Assets --> VerifyDraft["Visual Verification Draft<br/>verification-contract.draft.json"]
 
-  Gate --> Planning["OpenSpec / planning / task-breakdown"]
-  Planning --> Coding["Coding starts after user confirmation"]
+  Gate --> VerifyDraft
+  VerifyDraft --> Planning["planning / task-breakdown"]
+  Planning --> Seal["User-approved seal<br/>verification-contract.json"]
+  Seal --> Coding["Coding starts"]
+  Coding --> Verify["Real page double capture<br/>verify + check"]
+  Verify --> Complete["Coding Complete"]
 ```
 
 The main workflow keeps seven skills in the critical path: `figma-workflow` plus the six Phase A-E skills. Engineering skills are used as needed and do not change the Phase A-E coding boundary.
@@ -64,9 +69,10 @@ Every main phase now has a reviewable expected output. The coverage matrix calls
 - `figma-design-diff`: compares cached Figma evidence and produces `design-diff.md` with recommended rerun phases.
 - `figma-ui-handoff`: produces `ui-handoff.md` to help design and product teams fill missing upstream handoff details.
 - `figma-assets-validate`: produces `assets-manifest.md` and `validation-report.md` for asset delivery and validation readiness.
+- `figma-implementation-verify`: prepares and seals the visual verification contract, captures the real implementation twice in Playwright Chromium, runs pixel diffs and visual assertions, and machine-generates `implementation-verification.md`.
 - Implementation evidence gate: checks whether `implementation-evidence.md` includes module-level token evidence, snapshot evidence, and a coding checklist before handoff.
 
-Downstream coding agents must fill `docs/design/<feature>/implementation-verification.md` before claiming coding is complete. That file records evidence read, token usage, snapshot or visual baseline validation, and intentional deviations.
+Prepare `verification-contract.draft.json` before planning and obtain a user-approved seal before coding. Before claiming coding complete, downstream agents must run `figma-implementation-verify verify` and `check`; the verifier generates `implementation-verification.md`, and agents must not fill it manually.
 
 ## Install
 

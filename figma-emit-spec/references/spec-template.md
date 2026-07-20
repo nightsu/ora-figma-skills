@@ -187,47 +187,9 @@
 - [ ] 任何 intentional deviation 已写入 Conflict / Deviation Log
 ```
 
-## `implementation-verification.md` 下游审计模板
+## Post-coding visual verification handoff
 
-目标路径:`docs/design/<feature>/implementation-verification.md`。下游 coding agent 在声明 coding complete 前必须填写此文件。build/unit tests 只能证明代码行为或编译结果,不能替代 design token 和 snapshot / visual baseline validation。
-
-```markdown
-# Implementation Verification — <feature>
-
-> Path: docs/design/<feature>/implementation-verification.md
-> Filled by downstream coding agent before claiming coding complete.
-> Build/unit tests alone are not design verification.
-
-## Evidence Read
-- [ ] `implementation-evidence.md`
-- [ ] `ui-understanding.md`
-- [ ] `design-token-patch.md`
-- [ ] `implementation-spec.md`
-- [ ] `api-mapping.md`
-- [ ] Snapshot / visual baseline: `snapshots/default.png` / `<missing>` / `<待 P15 回填>`
-
-## Token Application
-| Module | Token Evidence | Applied Tokens | Notes |
-|---|---|---|---|
-| <ModuleName> | `design-token-patch.md#...` | `<token-name>=<value>` | <notes> |
-
-## Snapshot / Visual Baseline Check
-| Baseline | Compared | Result | Notes |
-|---|---|---|---|
-| `snapshots/default.png` | yes/no | pass/fail/risk | <layout/color/spacing/typography notes> |
-
-## Intentional Deviations
-| Module | Deviation | Reason | Approved By |
-|---|---|---|---|
-| <ModuleName> | <deviation or none> | <reason> | <human/agent> |
-
-## Final Checklist
-- [ ] Design tokens were applied from module-level evidence, not guessed
-- [ ] Snapshot / visual baseline validation was performed or risk was recorded
-- [ ] Any missing evidence is recorded as verification risk
-- [ ] Build/unit tests passed where applicable
-- [ ] Implementation is ready for human review
-```
+本模板不生成手填 `implementation-verification.md`。P15 后由 `figma-implementation-verify prepare` 生成 `verification-contract.draft.json`;planning 补齐 route、locator、synthetic fixture、assertions 与 guardrails 后,用户批准并 seal。coding 后运行 `verify` 与 `check`,由真实页面证据机器生成 `implementation-verification.md`。
 
 ### `Evidence by Module`
 
@@ -240,7 +202,7 @@
 - `<missing>` / `<待 P15 回填>` 只允许作为 P15 回填前或 P15 已显式 skip/audit 后的 risk marker,不能视为完整 visual validation
 - 缺少 module-level token evidence、结构化布局子项 token、Snapshot evidence 字段或 Coding Gate Checklist 时,evidence gate 状态必须是 `incomplete`,除非用户显式 skip 并 audit
 - 若某类证据缺失,写 `<missing>` 并同步写入 `open-questions.md` 或 verification risk; unresolved snapshot evidence must remain a handoff risk
-- 下游 coding 完成前必须填写 `docs/design/<feature>/implementation-verification.md`
+- 下游 coding 完成前必须运行 `figma-implementation-verify verify` 与 `check`;`implementation-verification.md` 禁止手填
 
 ### `## Open Questions`
 - **填充:** 一句话指向 `open-questions.md`,不重复内容

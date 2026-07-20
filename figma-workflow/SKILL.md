@@ -35,6 +35,8 @@ Cache layer is optional evidence infrastructure. It can refresh or summarize Fig
 
 `figma-workflow` 可以通过 `figma-assets-validate` 生成 `assets-manifest.md`、`validation-report.md` 和 `snapshots/`,用于资源交付、visual baseline 和 spec/snapshot 验证收口。该入口不改变 Phase E handoff,也不触发 coding。
 
+`figma-workflow` 在 P15 后通过 `figma-implementation-verify prepare` 生成 `verification-contract.draft.json`,让 planning 补齐真实页面 route、locator、synthetic fixture 与视觉断言。draft 可以进入 planning,但 coding 前必须由用户批准并 seal;coding 后由同一 skill 执行 `verify` 与 `check`。
+
 ## Prerequisites
 
 调用前用户需要明确:
@@ -112,6 +114,11 @@ docs/design/<feature>/
 ├── snapshots/
 ├── implementation-spec.md
 ├── implementation-evidence.md
+├── verification-contract.draft.json
+├── verification-contract.json
+├── verification-result.json
+├── verification/
+├── implementation-verification.md
 └── open-questions.md
 ```
 
@@ -153,6 +160,7 @@ docs/design/<feature>/
    - 汇总 `design-diff.md`、`ui-handoff.md`、`assets-manifest.md` / `validation-report.md` / `snapshots/`
    - `implementation-evidence.md` 是 handoff 前 `required_prompt`,用于约束后续实现必须读取哪些上游证据
    - `figma-assets-validate` 永远作为 handoff 前 `required_prompt`
+   - P15 完成后,`figma-implementation-verify prepare` 作为 handoff 前 `required_prompt`,生成 planning 使用的 contract draft
    - 用户可以 run / view / skip
    - skip 必须写入 `inputs.md` audit
 
@@ -279,6 +287,8 @@ Handoff to planning / spec authoring:
 
 Phase E handoff 是 OpenSpec / planning / task breakdown 等准备阶段的入口,不是默认 coding 入口。任何 handoff 选项都不应在 `figma-workflow` 内部直接写业务代码;业务代码只能在用户明确确认执行 coding 后开始。
 
+`verification-contract.draft.json` 可以进入 planning,但不能授权 coding。planning 补齐 draft 后,必须由用户明确批准并运行 `figma-implementation-verify seal`;没有 sealed `verification-contract.json` 时状态不是 Coding Ready。若 pre-handoff skip 了 draft,只能继续人工 planning/退出,不能在本 workflow 中获得 Coding Complete。
+
 ### Implementation evidence gate
 
 `implementation-spec.md` 不是编码阶段的唯一输入。handoff 前必须有质量通过的 `implementation-evidence.md`,或用户显式 audited skip。
@@ -297,8 +307,8 @@ Snapshot evidence 字段必须存在。`<missing>` / `<待 P15 回填>` 只允�
 缺少 module-level token evidence、结构化布局子项 token、Snapshot evidence 字段或缺少 Coding Gate Checklist 时,`implementation-evidence.md` 状态为 `incomplete`。
 skip 风险必须明确写出:下游实现可能不遵守 `design-token-patch.md`,也可能跳过 snapshot / visual baseline validation。
 
-下游实现 agent 在每个 feature 开始编码前必须先读 `implementation-evidence.md` 列出的证据文件。若 `ui-understanding.md`、`design-token-patch.md`、`implementation-spec.md` 互相冲突,必须先记录冲突和采用依据,不能用常见组件形态或个人推测代替 Figma 证据。
-coding agent 在声明 coding complete 前必须填写 `docs/design/<feature>/implementation-verification.md`,记录已读 evidence、module-level token 应用、snapshot / visual baseline validation 和 intentional deviations。build/unit tests alone are not design verification。
+下游实现 agent 在每个 feature 开始编码前必须先读 `implementation-evidence.md` 列出的证据文件,并确认 `verification-contract.json` 已由用户批准并 seal。若 `ui-understanding.md`、`design-token-patch.md`、`implementation-spec.md` 互相冲突,必须先记录冲突和采用依据,不能用常见组件形态或个人推测代替 Figma 证据。
+coding agent 在声明 coding complete 前必须运行 `figma-implementation-verify verify` 与 `check`。`docs/design/<feature>/implementation-verification.md` 由验证器根据真实页面双次截图、pixel diff、关键视觉断言和 Verification Subject 机器生成,禁止手填。build/unit tests alone are not design verification。
 
 ## 错误处理
 
@@ -326,6 +336,8 @@ coding agent 在声明 coding complete 前必须填写 `docs/design/<feature>/im
 - ❌ 不因为工程化检查点 skip 就认为风险已解决
 - ❌ 不在 handoff 前静默跳过 `figma-assets-validate` 提示
 - ❌ 不在 handoff 前静默跳过 `implementation-evidence.md` 证据门禁
+- ❌ 不把 verification contract draft 当作 sealed contract
+- ❌ 不手填 `implementation-verification.md` 或跳过 post-coding `check`
 - ❌ 不读取额外配置文件或自动猜测 feature 名
 - ❌ 不自动回答 open questions
 

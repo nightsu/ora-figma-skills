@@ -33,9 +33,14 @@ flowchart LR
   EvidenceGate --> Gate
   UIHandoff["UI Handoff<br/>ui-handoff.md"] -.-> Gate
   Assets["Assets / Validation<br/>assets-manifest.md<br/>validation-report.md"] -.-> Gate
+  Assets --> VerifyDraft["Visual Verification Draft<br/>verification-contract.draft.json"]
 
-  Gate --> Planning["OpenSpec / planning / task-breakdown"]
-  Planning --> Coding["用户确认后进入 coding"]
+  Gate --> VerifyDraft
+  VerifyDraft --> Planning["planning / task-breakdown"]
+  Planning --> Seal["用户批准并 seal<br/>verification-contract.json"]
+  Seal --> Coding["进入 coding"]
+  Coding --> Verify["真实页面双次截图<br/>verify + check"]
+  Verify --> Complete["Coding Complete"]
 ```
 
 主链路保持 7 个 skill：`figma-workflow` + Phase A-E 的 6 个阶段 skill。工程化能力按需使用，不改变 Phase A-E 的 coding boundary。
@@ -64,9 +69,10 @@ flowchart LR
 - `figma-design-diff`：基于缓存的 Figma evidence 生成 `design-diff.md`，提示 recommended rerun phases。
 - `figma-ui-handoff`：生成 `ui-handoff.md`，帮助设计/产品补齐上游交接信息。
 - `figma-assets-validate`：生成 `assets-manifest.md` 与 `validation-report.md`，收口资源交付和自动化验证。
+- `figma-implementation-verify`：生成并冻结视觉验证契约，对真实实现页面执行 Playwright Chromium 双次截图、pixel diff 与关键视觉断言，并机器生成 `implementation-verification.md`。
 - Implementation evidence gate：handoff 前检查 `implementation-evidence.md` 是否包含 module-level token evidence、snapshot evidence 和 coding checklist。
 
-下游 coding agent 在声明 coding complete 前必须填写 `docs/design/<feature>/implementation-verification.md`，记录已读 evidence、token 应用、snapshot / visual baseline validation 和 intentional deviations。
+planning 前生成 `verification-contract.draft.json`，coding 前必须由用户批准并 seal。下游 coding agent 声明 coding complete 前必须运行 `figma-implementation-verify verify` 与 `check`；`implementation-verification.md` 由验证器生成，禁止手填。
 
 ## 安装
 

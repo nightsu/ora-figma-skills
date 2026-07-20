@@ -37,6 +37,10 @@ docs/design/<feature>/
 ├── validation-report.md
 ├── implementation-spec.md
 ├── implementation-evidence.md
+├── verification-contract.draft.json
+├── verification-contract.json
+├── verification-result.json
+├── verification/
 ├── implementation-verification.md
 └── open-questions.md
 ```
@@ -75,7 +79,7 @@ phase E review gate 通过后,先进入交接前工程化检查。检查项处�
 
 `implementation-evidence.md` 是 handoff 前 required prompt。workflow 会检查它是否包含 module-level token evidence、结构化布局子项 token evidence、Snapshot evidence 字段和 Coding Gate Checklist。文件缺失或状态为 `incomplete` 时,不能静默进入 handoff;用户可以显式 skip,但 skip 会写入 `inputs.md` audit 并保留风险。
 
-下游 coding agent 在声明 coding complete 前必须填写 `docs/design/<feature>/implementation-verification.md`,记录已读 evidence、token 应用、snapshot / visual baseline validation 和 intentional deviations。普通 build / unit tests 不能替代设计验证。
+P15 后先运行 `figma-implementation-verify prepare`,把 `verification-contract.draft.json` 带入 planning;coding 前必须由用户批准并 seal。下游 coding agent 在声明 coding complete 前必须运行 `figma-implementation-verify verify` 与 `check`;`implementation-verification.md` 由验证器机器生成,禁止手填。普通 build / unit tests 不能替代设计验证。
 
 ## 详细规约
 

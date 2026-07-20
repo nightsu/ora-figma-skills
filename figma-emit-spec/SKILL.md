@@ -103,7 +103,8 @@ figma-emit-spec feature=<feature-name>
    - 视觉基线来自 `snapshots/default.png`、`assets-manifest.md` 或 `validation-report.md`;Snapshot evidence 字段必须存在,但 `<missing>` / `<待 P15 回填>` 只能作为 P15 回填前或 P15 已显式 skip/audit 后的 risk marker,不能视为完整 visual validation
    - 缺少 module-level token evidence、结构化布局子项 token、Snapshot evidence 字段或 Coding Gate Checklist 时,evidence gate 状态必须是 `incomplete`,除非用户显式 skip 并 audit
    - 列出 `Do Not Implement From Assumption` 清单,禁止用常见 AntD 组件形态替代 Figma 证据
-   - 下游 coding agent 在声明 coding complete 前必须填写 `docs/design/<feature>/implementation-verification.md`,记录 evidence 读取、token 应用、snapshot / visual baseline validation 和 intentional deviations
+   - P15 后由 `figma-implementation-verify prepare` 生成 verification contract draft;planning 补齐后由用户批准并 seal
+   - 下游 coding agent 在声明 coding complete 前必须运行 `figma-implementation-verify verify` 与 `check`;`implementation-verification.md` 由验证器机器生成,禁止手填
 
 6. **合成 open-questions.md**
    - 按来源分段:`From Phase A` / `From Phase B` / `From Phase C1` / `From Phase C2` / `From Phase D` / `Cross-Product Conflicts (auto-detected)`
@@ -252,47 +253,9 @@ handoff 发生在 Phase E review gate 选择 Proceed 之后。handoff 后可以�
 - [ ] 任何 intentional deviation 已写入 Conflict / Deviation Log
 ```
 
-### `implementation-verification.md` 下游审计模板
+### Post-coding visual verification handoff
 
-目标路径:`docs/design/<feature>/implementation-verification.md`。下游 coding agent 在声明 coding complete 前填写此文件。
-
-```markdown
-# Implementation Verification — <feature>
-
-> Path: docs/design/<feature>/implementation-verification.md
-> Filled by downstream coding agent before claiming coding complete.
-> Build/unit tests alone are not design verification.
-
-## Evidence Read
-- [ ] `implementation-evidence.md`
-- [ ] `ui-understanding.md`
-- [ ] `design-token-patch.md`
-- [ ] `implementation-spec.md`
-- [ ] `api-mapping.md`
-- [ ] Snapshot / visual baseline: `snapshots/default.png` / `<missing>` / `<待 P15 回填>`
-
-## Token Application
-| Module | Token Evidence | Applied Tokens | Notes |
-|---|---|---|---|
-| <ModuleName> | `design-token-patch.md#...` | `<token-name>=<value>` | <notes> |
-
-## Snapshot / Visual Baseline Check
-| Baseline | Compared | Result | Notes |
-|---|---|---|---|
-| `snapshots/default.png` | yes/no | pass/fail/risk | <layout/color/spacing/typography notes> |
-
-## Intentional Deviations
-| Module | Deviation | Reason | Approved By |
-|---|---|---|---|
-| <ModuleName> | <deviation or none> | <reason> | <human/agent> |
-
-## Final Checklist
-- [ ] Design tokens were applied from module-level evidence, not guessed
-- [ ] Snapshot / visual baseline validation was performed or risk was recorded
-- [ ] Any missing evidence is recorded as verification risk
-- [ ] Build/unit tests passed where applicable
-- [ ] Implementation is ready for human review
-```
+Phase E 不再提供手填 `implementation-verification.md` 模板。P15 生成 required baselines 后,调用 `figma-implementation-verify prepare`,把 `verification-contract.draft.json` 带入 planning。coding 前必须由用户批准并 seal;coding 后由 `verify` 与 `check` 对真实实现页面执行双次截图、pixel diff 与关键视觉断言,并机器生成 `implementation-verification.md`。
 
 ### `open-questions.md` 模板
 
